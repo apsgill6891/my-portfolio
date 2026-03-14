@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Case Studies — Anmol Gill</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400;1,600&display=swap" rel="stylesheet" />
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth;-webkit-font-smoothing:antialiased}
+    a{text-decoration:none;color:inherit}
+    ul{list-style:none}
+
+    :root{
+      --navy:#0B1F3B;--navy-10:rgba(11,31,59,0.08);--navy-06:rgba(11,31,59,0.04);
+      --ocean:#2F80ED;--ocean-dark:#1a6fd4;
+      --gold:#C9A64B;--gold-10:rgba(201,166,75,0.10);
+      --cream:#F8F9FB;--white:#FFFFFF;
+      --gray-500:#718096;--gray-700:#2D3748;
+      --cat-strategy:#2F80ED;
+      --cat-ops:#16A34A;
+      --cat-turnaround:#DC2626;
+      --cat-maritime:#7C3AED;
+      --cat-innovation:#EA580C;
+      --font-head:'Space Grotesk',sans-serif;
+      --font-body:'Inter',sans-serif;
+      --font-quote:'Cormorant Garamond',serif;
+      --ease:cubic-bezier(0.25,0.46,0.45,0.94);
+    }
+
+    body{font-family:var(--font-body);background:var(--cream);color:var(--navy);overflow-x:hidden}
+    .container{max-width:1200px;margin:0 auto;padding:0 clamp(24px,6vw,80px)}
+
+    .reveal{opacity:0;transform:translateY(28px);transition:opacity 0.7s var(--ease),transform 0.7s var(--ease)}
+    .reveal.in{opacity:1;transform:none}
+
+    /* NAV */
+    #nav{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;align-items:center;justify-content:space-between;padding:22px clamp(24px,5vw,64px);background:rgba(255,255,255,0.96);backdrop-filter:blur(16px);box-shadow:0 1px 0 var(--navy-10)}
+    .nav-logo{font-family:var(--font-head);font-size:0.88rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--navy)}
+    .nav-links{display:flex;gap:36px}
+    .nav-links a{font-size:0.72rem;font-weight:500;letter-spacing:0.12em;text-transform:uppercase;color:var(--gray-500);transition:color 0.3s}
+    .nav-links a:hover{color:var(--gold)}
+    .nav-back{font-size:0.7rem;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:var(--navy);border:1px solid var(--navy-10);padding:9px 22px;transition:all 0.3s}
+    .nav-back:hover{background:var(--navy);color:var(--white)}
+
+    /* PAGE HERO */
+    .page-hero{background:var(--navy);padding:clamp(120px,16vw,180px) 0 clamp(80px,10vw,120px);position:relative;overflow:hidden}
+    .page-hero .map-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(201,166,75,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(201,166,75,0.04) 1px,transparent 1px);background-size:80px 80px;pointer-events:none}
+    .page-hero-inner{position:relative;z-index:1}
+    .page-kicker{font-size:0.68rem;font-weight:600;letter-spacing:0.25em;text-transform:uppercase;color:rgba(201,166,75,0.8);margin-bottom:20px;display:flex;align-items:center;gap:10px}
+    .page-kicker::before{content:'';display:block;width:24px;height:1px;background:rgba(201,166,75,0.8)}
+    .page-title{font-family:var(--font-head);font-size:clamp(3rem,7vw,6rem);font-weight:700;letter-spacing:-0.04em;line-height:0.92;color:var(--white);margin-bottom:24px}
+    .page-title em{color:var(--gold);font-style:italic}
+    .page-sub{font-size:1.05rem;line-height:1.75;color:rgba(255,255,255,0.48);max-width:580px}
+
+    /* IMPACT BAND */
+    .impact-band{background:var(--white);border-bottom:1px solid var(--navy-10)}
+    .impact-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--navy-10)}
+    .impact-item{background:var(--white);padding:40px 32px;text-align:center}
+    .impact-num{font-family:var(--font-head);font-size:clamp(2.4rem,4vw,3.5rem);font-weight:700;letter-spacing:-0.04em;color:var(--navy);line-height:1;display:block;margin-bottom:8px}
+    .impact-label{font-size:0.72rem;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:var(--gray-500)}
+
+    /* CASE STUDIES */
+    .cases-section{padding:clamp(64px,9vw,110px) 0}
+    .cases-section+.cases-section{padding-top:0}
+    .cat-header{margin-bottom:40px;padding-bottom:20px;border-bottom:1px solid var(--navy-10)}
+    .cat-label{font-size:0.68rem;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;margin-bottom:8px;display:flex;align-items:center;gap:8px}
+    .cat-dot{width:8px;height:8px;border-radius:50%}
+    .cat-title{font-family:var(--font-head);font-size:1.6rem;font-weight:700;color:var(--navy)}
+
+    .case-card{background:var(--white);border:1px solid var(--navy-10);margin-bottom:20px;display:grid;grid-template-columns:1fr 340px;transition:box-shadow 0.25s var(--ease),transform 0.25s var(--ease)}
+    .case-card:hover{box-shadow:0 20px 48px rgba(11,31,59,0.09);transform:translateY(-3px)}
+    .case-body{padding:44px 40px}
+    .case-meta{display:flex;align-items:center;gap:12px;margin-bottom:20px;flex-wrap:wrap}
+    .case-cat{font-size:0.62rem;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;padding:4px 12px;border-radius:0}
+    .case-year{font-size:0.68rem;color:var(--gray-500);letter-spacing:0.08em}
+    .case-company{font-family:var(--font-head);font-size:1.5rem;font-weight:700;color:var(--navy);margin-bottom:6px}
+    .case-role{font-size:0.82rem;color:var(--gray-500);margin-bottom:20px}
+    .case-challenge-label{font-size:0.62rem;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:var(--gray-500);margin-bottom:8px}
+    .case-challenge{font-size:0.95rem;line-height:1.75;color:var(--gray-700);margin-bottom:24px}
+    .case-actions-label{font-size:0.62rem;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:var(--gray-500);margin-bottom:10px}
+    .case-actions{list-style:none;display:flex;flex-direction:column;gap:8px;margin-bottom:24px}
+    .case-actions li{font-size:0.88rem;line-height:1.65;color:var(--gray-700);display:flex;align-items:flex-start;gap:10px}
+    .case-actions li::before{content:'→';color:var(--gold);flex-shrink:0;margin-top:1px}
+    .case-insight{background:var(--gold-10);border-left:2px solid var(--gold);padding:16px 20px;margin-top:8px}
+    .case-insight p{font-family:var(--font-quote);font-size:1.05rem;font-style:italic;color:var(--navy);line-height:1.5}
+
+    .case-metrics{background:var(--navy);padding:44px 36px;display:flex;flex-direction:column;justify-content:space-between;gap:32px}
+    .metric-block{}
+    .metric-val{font-family:var(--font-head);font-size:clamp(2rem,3.5vw,3rem);font-weight:700;letter-spacing:-0.04em;color:var(--white);line-height:1;margin-bottom:6px}
+    .metric-label{font-size:0.68rem;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:rgba(255,255,255,0.4)}
+    .metric-divider{height:1px;background:rgba(255,255,255,0.07)}
+
+    /* STORIES GRID */
+    .stories-section{padding:0 0 clamp(64px,9vw,110px)}
+    .stories-header{margin-bottom:40px;padding-bottom:20px;border-bottom:1px solid var(--navy-10)}
+    .stories-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+    .story-card{background:var(--white);border:1px solid var(--navy-10);padding:32px 28px;transition:transform 0.25s var(--ease),box-shadow 0.25s var(--ease)}
+    .story-card:hover{transform:translateY(-5px);box-shadow:0 20px 40px rgba(11,31,59,0.09)}
+    .story-icon{font-size:1.4rem;margin-bottom:16px;display:block}
+    .story-title{font-family:var(--font-head);font-size:1rem;font-weight:700;color:var(--navy);margin-bottom:10px;line-height:1.3}
+    .story-summary{font-size:0.85rem;line-height:1.75;color:var(--gray-500);margin-bottom:16px}
+    .story-outcome{font-size:0.78rem;font-weight:600;color:var(--ocean)}
+
+    /* SKILLS + EDUCATION */
+    .dual-section{background:var(--navy);padding:clamp(64px,9vw,110px) 0}
+    .dual-grid{display:grid;grid-template-columns:1fr 1fr;gap:60px}
+    .dual-block-title{font-family:var(--font-head);font-size:1.5rem;font-weight:700;color:var(--white);margin-bottom:32px;padding-bottom:16px;border-bottom:1px solid rgba(255,255,255,0.07)}
+
+    .skill-group{margin-bottom:28px}
+    .skill-group-name{font-size:0.68rem;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:rgba(201,166,75,0.7);margin-bottom:12px}
+    .skill-tags{display:flex;flex-wrap:wrap;gap:8px}
+    .skill-tag{font-size:0.75rem;font-weight:500;padding:6px 14px;border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.6);transition:all 0.25s}
+    .skill-tag:hover{border-color:rgba(201,166,75,0.4);color:var(--gold)}
+
+    .edu-item{margin-bottom:28px;padding-bottom:28px;border-bottom:1px solid rgba(255,255,255,0.07)}
+    .edu-item:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0}
+    .edu-school{font-family:var(--font-head);font-size:1.02rem;font-weight:700;color:var(--white);margin-bottom:4px}
+    .edu-degree{font-size:0.85rem;color:rgba(255,255,255,0.5);margin-bottom:8px}
+    .edu-detail{font-size:0.82rem;line-height:1.7;color:rgba(255,255,255,0.4)}
+
+    /* CTA */
+    .cta-section{background:var(--cream);padding:clamp(64px,9vw,110px) 0}
+    .cta-inner{text-align:center;max-width:640px;margin:0 auto}
+    .cta-title{font-family:var(--font-head);font-size:clamp(2rem,4.5vw,3.5rem);font-weight:700;letter-spacing:-0.03em;color:var(--navy);margin-bottom:20px;line-height:1.05}
+    .cta-title em{color:var(--ocean);font-style:italic}
+    .cta-sub{font-size:1rem;line-height:1.75;color:var(--gray-500);margin-bottom:40px}
+    .cta-btns{display:flex;gap:16px;justify-content:center;flex-wrap:wrap}
+    .btn-primary{display:inline-flex;align-items:center;gap:8px;background:var(--ocean);color:var(--white);font-size:0.72rem;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;padding:14px 32px;transition:background 0.25s,transform 0.2s}
+    .btn-primary:hover{background:var(--ocean-dark);transform:translateY(-2px)}
+    .btn-outline{display:inline-flex;align-items:center;gap:8px;color:var(--navy);font-size:0.72rem;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;padding:12px 28px;border:1px solid var(--navy-10);transition:all 0.25s}
+    .btn-outline:hover{background:var(--navy);color:var(--white);transform:translateY(-2px)}
+
+    footer{background:#060F1E;padding:36px clamp(24px,6vw,80px);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;border-top:1px solid rgba(255,255,255,0.05)}
+    .footer-brand{font-family:var(--font-head);font-size:0.8rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:rgba(255,255,255,0.35)}
+    .footer-copy{font-size:0.75rem;color:rgba(255,255,255,0.18)}
+    .footer-links a{font-size:0.7rem;font-weight:500;letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,0.28);transition:color 0.25s;margin-left:28px}
+    .footer-links a:hover{color:var(--gold)}
+
+    @media(max-width:960px){
+      .case-card{grid-template-columns:1fr}
+      .case-metrics{padding:32px 36px;flex-direction:row;gap:24px;flex-wrap:wrap}
+      .dual-grid{grid-template-columns:1fr}
+      .stories-grid{grid-template-columns:repeat(2,1fr)}
+      .impact-grid{grid-template-columns:repeat(2,1fr)}
+    }
+    @media(max-width:640px){
+      .nav-links{display:none}
+      .stories-grid{grid-template-columns:1fr}
+      .impact-grid{grid-template-columns:repeat(2,1fr)}
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav id="nav">
+  <a href="index.html" class="nav-logo">Anmol Gill</a>
+  <ul class="nav-links">
+    <li><a href="index.html#navigator">About</a></li>
+    <li><a href="index.html#journey">Journey</a></li>
+    <li><a href="index.html#capabilities">Capabilities</a></li>
+    <li><a href="index.html#contact">Contact</a></li>
+  </ul>
+  <a href="index.html" class="nav-back">← Back Home</a>
+</nav>
+
+<!-- PAGE HERO -->
+<div class="page-hero">
+  <div class="map-grid"></div>
+  <div class="container page-hero-inner">
+    <div class="page-kicker">The Log Book</div>
+    <h1 class="page-title">Case Studies<br><em>&amp; Stories</em></h1>
+    <p class="page-sub">11 case studies across maritime, logistics, aerospace, strategy, and innovation — with the real numbers, actions, and insights behind each one.</p>
+  </div>
+</div>
+
+<!-- IMPACT BAND -->
+<div class="impact-band">
+  <div class="container">
+    <div class="impact-grid">
+      <div class="impact-item reveal"><span class="impact-num">$270M</span><span class="impact-label">Contract Contributed</span></div>
+      <div class="impact-item reveal" style="transition-delay:0.08s"><span class="impact-num">$135M</span><span class="impact-label">Revenue Synergies</span></div>
+      <div class="impact-item reveal" style="transition-delay:0.16s"><span class="impact-num">40%</span><span class="impact-label">Aircraft TAT Reduction</span></div>
+      <div class="impact-item reveal" style="transition-delay:0.24s"><span class="impact-num">$50M</span><span class="impact-label">Risk Averted at Sea</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     STRATEGY & CONSULTING
+════════════════════════════════════════ -->
+<section class="cases-section">
+  <div class="container">
+    <div class="cat-header reveal">
+      <div class="cat-label" style="color:var(--cat-strategy)"><div class="cat-dot" style="background:var(--cat-strategy)"></div>Strategy &amp; Consulting</div>
+      <div class="cat-title">Where direction gets set</div>
+    </div>
+
+    <!-- OLG -->
+    <div class="case-card reveal" id="olg">
+      <div class="case-body">
+        <div class="case-meta">
+          <span class="case-cat" style="background:rgba(47,128,237,0.1);color:var(--cat-strategy)">Strategy Consulting</span>
+          <span class="case-year">2025 · Toronto, Canada</span>
+        </div>
+        <div class="case-company">Ontario Lottery &amp; Gaming Corporation</div>
+        <div class="case-role">Strategy Consultant Intern · Revenue ~CAD $4.7B</div>
+        <div class="case-challenge-label">The Challenge</div>
+        <p class="case-challenge">OLG needed new revenue growth vectors. The task: identify a partnership strategy that could unlock untapped market segments, gain executive alignment, and make it into the FY27 Annual Business Plan — a plan shaped by 8 divisional leaders with competing priorities.</p>
+        <div class="case-actions-label">What I Did</div>
+        <ul class="case-actions">
+          <li>Researched international lottery models and identified India's Lucky Yatra program — where train ticket numbers serve as lottery entries — as a directly applicable blueprint for OLG's transit partnerships</li>
+          <li>Modeled the revenue opportunity across 3 activation scenarios with a pilot of 25 lottery terminals at transit hubs, projecting CAD $25M in incremental revenue</li>
+          <li>Secured CEO buy-in by presenting a clear, data-backed partnership strategy with implementation roadmap</li>
+          <li>Co-facilitated a strategy workshop with 8 executives using Visual Prioritization and Orthodoxy-Flip exercises to drive consensus — successfully integrating Operational Efficiency as a shared cross-divisional priority rather than a standalone workstream</li>
+        </ul>
+        <div class="case-insight">
+          <p>"The best strategies don't just solve a problem — they reframe how the organization sees the problem. Embedding operational efficiency as a shared lens across 4 strategic priorities changed how the entire leadership team approached FY27."</p>
+        </div>
+      </div>
+      <div class="case-metrics">
+        <div class="metric-block"><div class="metric-val">$25M</div><div class="metric-label">Projected Revenue Pipeline</div></div>
+        <div class="metric-divider"></div>
+        <div class="metric-block"><div class="metric-val">25</div><div class="metric-label">Lottery Terminal Pilot</div></div>
+        <div class="metric-divider"></div>
+        <div class="metric-block"><div class="metric-val">8</div><div class="metric-label">Executives Aligned</div></div>
+        <div class="metric-divider"></div>
+        <div class="metric-block"><div class="metric-val">FY27</div><div class="metric-label">Annual Business Plan Impact</div></div>
+      </div>
+    </div>
+
+    <!-- CASCADE TAT -->
+    <div class="case-card reveal" id="cascade">
+      <div class="case-body">
+        <div class="case-meta">
+          <span class="case-cat" style="background:rgba(47,128,237,0.1);color:var(--cat-strategy)">Aerospace Consulting</span>
+          <span class="case-year">2022–2024 · Abbotsford, BC</span>
+        </div>
+        <div class="case-company">IMP Group — Cascade Aerospace</div>
+        <div class="case-role">Consultant · USAF Avionics Upgrade Program · Revenue ~CAD $600M</div>
+        <div class="case-challenge-label">The Challenge</div>
+        <p class="case-challenge">The USAF avionics upgrade program was running 50% over its turnaround time target — 180 days actual versus a 120-day contractual commitment. Incremental improvements had plateaued. No one had found the root cause, and the $270M NATO contract renewal was at risk.</p>
+        <div class="case-actions-label">What I Did</div>
+        <ul class="case-actions">
+          <li>Built trust with skeptical stakeholders over time — the data only became accessible once relationships were established</li>
+          <li>Collected stage-by-stage data including non-routines, training hold times, and parts "robbing" across all active aircraft</li>
+          <li>Re-visualized the data as a Gantt chart (instead of standard summary tables) — which revealed that the program was handling 6 aircraft concurrently despite a contractual limit of 4, creating systemic resource contention in final delivery stages</li>
+          <li>Presented the counter-intuitive recommendation to the COO: reduce concurrent aircraft by 2 to reduce overall throughput time — backed by stage-wise data and simulation</li>
+          <li>The COO approved the change; TAT dropped from 180 to 105 days — beating the 120-day target</li>
+        </ul>
+        <div class="case-insight">
+          <p>"Presenting data differently is everything. The bottleneck had been there for months. Nobody saw it until we stopped looking at averages and started looking at overlap."</p>
+        </div>
+      </div>
+      <div class="case-metrics">
+        <div class="metric-block"><div class="metric-val">$270M</div><div class="metric-label">NATO Contract Won</div></div>
+        <div class="metric-divider"></div>
+        <div class="metric-block"><div class="metric-val">40%</div><div class="metric-label">TAT Reduction</div></div>
+        <div class="metric-divider"></div>
+        <div class="metric-block"><div class="metric-val">105</div><div class="metric-label">Days (vs 120 target)</div></div>
+        <div class="metric-divider"></div>
+        <div class="metric-block"><div class="metric-val">50</div><div class="metric-label">Aircraft Covered</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════
+     OPERATIONS & SCALE
+════════════════════════════════════════ -->
+<section class="cases-section">
+  <div class="container">
+    <div class="cat-header reveal">
+      <div class="cat-label" style="color:var(--cat-ops)"><div class="cat-dot" style="background:var(--cat-ops)"></div>Operations &amp; Scale</div>
+      <div class="cat-title">Where infrastructure meets execution</div>
+    </div>
+
+    <!-- DELHIVERY -->
+    <div class="case-card reveal" id="delhivery">
+      <div class="case-body">
+        <div class="case-meta">
+          <span class="case-cat" style="background:rgba(22,163,74,0.1);color:var(--cat-ops)">Logistics · Infrastructure</span>
+          <span class="case-year">2021–2022 · Gurugram, India</span>
+        </div>
+        <div class="case-company">Delhivery Public Limited</div>
+        <div class="case-role">Senior Operations Manager · India's largest logistics provider · Revenue ~$1.4B</div>
+        <div class="case-challenge-label">The Challenge</div>
+        <p class="case-challenge">India's largest logistics company needed to rapidly scale its warehouse infrastructure across the country to capture market share and realize post-acquisition synergies — 150+ simultaneous projects, from 10,000 to 300,000 sq ft, with no existing central tracking system.</p>
+        <div class="case-actions-label">What I Did</div>
+        <ul class="case-actions">
+          <li>Led a team of 8 engineers to analyze capacity bottlenecks and design AutoCAD warehouse layouts across greenfield and brownfield projects</li>
+          <li>Built a real-time project tracker in Google Sheets (zero budget) — updating it personally each day until the team adopted it, then used the data to pitch for a more robust tool (Wrike)</li>
+          <li>Automated vehicle movement assessments in AutoCAD, reducing review time from 15 minutes to 1 minute per drawing (93% reduction) — eliminating 100+ hours of monthly team effort</li>
+          <li>Diagnosed a hub sorter rejection rate spike from 5% to 30% at Ahmedabad — identified within 3 days that Flipkart was placing barcodes on cardboard box joints, preventing scans. Resolved to 4% by adjusting camera positions and client packaging</li>
+        </ul>
+        <div class="case-insight">
+          <p>"A zero-budget tracker built in Google Sheets eventually became the proof of concept that unlocked real software investment. Sometimes you have to navigate with what you have — and show the map before you ask for the ship."</p>
+        </div>
+      </div>
+      <div class="case-metrics">
+        <div class="metric-block"><div class="metric-val">$135M</div><div class="metric-label">Revenue Synergies Realized</div></div>
+        <div class="metric-divider"></div>
+        <div class="metric-block"><div class="metric-val">2.5M</div><div class="metric-label">Sq Ft Warehouse Expansion</div></div>
+        <div class="metric-divider"></div>
+        <div class="metric-block"><div class="metric-val">93%</div><div class="metric-label">Drawing Review Efficiency</div></div>
+        <div class="metric-divider"></div>
+        <div class="metric-block"><div class="metric-val">150+</div><div class="metric-label">Projects Managed</div></div>
+      </div>
+    </div>
+
+    <!-- CASCADE SAFETY -->
+    <div class="case-card reveal">
+      <div class="case-body">
+        <div class="case-meta">
+          <span class="case-cat" style="background:rgba(22,163,74,0.1);color:var(--cat-ops)">Safety · Culture Change</span>
+          <span class="case-year">2022–2024 · Abbotsford, BC</span>
+        </div>
+        <div class="case-company">Cascade Aerospace — Safety Transformation</div>
+        <div class="case-role">Consultant · Safety Culture &amp; Audit Recovery</div>
+        <div class="case-challenge-label">The Challenge</div>
+        <p class="case-challenge">Cascade had ~30 safety incidents that had triggered audit findings. Engineers were going through safety motions but not internalizing the culture. A top-down compliance push was failing. The COO needed a different approach — fast.</p>
+        <div class="case-actions-label">What I Did</div>
+        <ul class="case-actions">
+          <li>Coached 300+ engineers through hands-on safety demonstrations — not classroom sessions, but floor-level walkthroughs anchored in real scenarios they recognized</li>
+          <li>Persuaded the COO to run a "crowdsource Fix Ideas" campaign — shifting ownership of safety problems from management to the engineers who lived them daily</li>
+          <li>Introduced a "Best Safety Idea of the Month" recognition program to reward proactive engagement rather than just incident-free streaks</li>
+          <li>Shifted the safety conversation from compliance to contribution — turning engineers from rule-followers into problem-solvers</li>
+        </ul>
+        <div class="case-insight">
+          <p>"Safety culture doesn't change through audits — it changes when people feel ownership. The crowdsource campaign gave 300 engineers a voice. The incidents disappeared because the mindset shifted, not because the rules got stricter."</p>
+        </div>
+      </div>
+      <div class="case-metrics">
+        <div class="metric-block"><div class="metric-val">0</div><div class="metric-label">Safety Incidents (from ~30)</div></div>
+        <div class="metric-divider"></div>
+        <div class="metric-block"><div class="metric-val">300+</div><div class="metric-label">Engineers Coached</div></div>
+        <div class="metric-divider"></div>
+        <div class="metric-block"><div class="metric-val">100%</div><div class="metric-label">Audit Findings Resolved</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════
+     TURNAROUND & TRANSFORMATION
+════════════════════════════════════════ -->
+<section class="cases-section">
+  <div class="container">
+    <div class="cat-header reveal">
+      <div class="cat-label" style="color:var(--cat-turnaround)"><div class="cat-dot" style="background:var(--cat-turnaround)"></div>Turnaround &amp; Transformation</div>
+      <div class="cat-title">Where broken systems get rebuilt</div>
+    </div>
+
+    <!-- BLOWHORN C2C -->
+    <div class="case-card reveal">
+      <div class="case-body">
+        <div class="case-meta">
+          <span class="case-cat" style="background:rgba(220,38,38,0.1);color:var(--cat-turnaround)">Business Model Redesign</span>
+          <span class="case-year">2019–2020 · New Delhi, India</span>
+        </div>
+        <div class="case-company">Blowhorn — C2C Business Launch</div>
+        <div class="case-role">Operations Manager · Asset-light last-mile logistics</div>
+        <div class="case-challenge-label">The Challenge</div>
+        <p class="case-challenge">Blowhorn's C2C logistics model was failing with a 66% delivery failure rate due to supply-side gaps. A customer publicly posted a complaint on LinkedIn tagging the CEO, threatening brand reputation. The business model needed a fundamental redesign — not a patch.</p>
+        <div class="case-actions-label">What I Did</div>
+        <ul class="case-actions">
+          <li>Met with the CEO to propose dedicated vehicles with real-time tracking — a structural fix, not a service recovery band-aid</li>
+          <li>Personally contacted the dissatisfied customer, offered a free trial and a dedicated account manager — turning a critic into a reference</li>
+          <li>Implemented a 15-day driver payment cycle as a USP (industry standard was 30-45 days) — improving driver reliability and reducing last-minute supply dropouts</li>
+          <li>Rebuilt the supply pipeline from scratch with clear SLA enforcement, creating a sustainable and scalable C2C model</li>
+        </ul>
+        <div class="case-insight">
+          <p>"The LinkedIn complaint was the best thing that happened to that business. It forced a conversation that exposed structural gaps everyone had been tolerating. One unhappy customer became the catalyst for a model that actually worked."</p>
+        </div>
+      </div>
+      <div class="case-metrics">
+        <div class="metric-block"><div class="metric-val">5%</div><div class="metric-label">Failure Rate (from 66%)</div></div>
+        <div class="metric-divider"></div>
+        <div class="metric-block"><div class="metric-val">15-day</div><div class="metric-label">Payment USP Created</div></div>
+        <div class="metric-divider"></div>
+        <div class="metric-block"><div class="metric-val">CEO</div><div class="metric-label">Personally Praised Outcome</div></div>
+      </div>
+    </div>
+
+    <!-- BLOWHORN APP -->
+    <div class="case-card reveal">
+      <div class="case-body">
+        <div class="case-meta">
+          <span class="case-cat" style="background:rgba(220,38,38,0.1);color:var(--cat-turnaround)">Behavioral Change · KPI Design</span>
+          <span class="case-year">2019–2020 · New Delhi, India</span>
+        </div>
+        <div class="case-company">Blowhorn — Mobile App Adoption</div>
+        <div class="case-role">Operations Manager · 25-city rollout</div>
+        <div class="case-challenge-label">The Challenge</div>
+        <p class="case-challenge">Mobile app usage was stuck at 38%. The KPI measuring it was binary — used or not used — giving zero insight into where to intervene. Incentives and mandates had failed for over a month. The problem wasn't motivation; it was measurement.</p>
+        <div class="case-actions-label">What I Did</div>
+        <ul class="case-actions">
+          <li>Identified that the binary KPI was the root problem — it provided no diagnostic value and no reward gradient</li>
+          <li>Collaborated with the data team to redesign the metric into usage tiers: 0–20%, 20–40%, 40–60%, 60–80%, 80%+</li>
+          <li>Implemented tiered incentives and penalties aligned to the new tiers — creating a visible, motivating ladder rather than a binary pass/fail</li>
+          <li>Ran targeted coaching sessions at each tier, addressing specific barriers at each level of adoption</li>
+          <li>The tiered KPI structure became the standard playbook adopted across all ~25 cities</li>
+        </ul>
+        <div class="case-insight">
+          <p>"The app didn't change. The team didn't change. The metric changed. Reframing how you measure a problem is often the same as solving it."</p>
+        </div>
+      </div>
+      <div class="case-metrics">
+        <div class="metric-block"><div class="metric-val">95%</div><div class="metric-label">App Usage (from 38%)</div></div>
+        <div class="metric-divider"></div>
+        <div class="metric-block"><div class="metric-val">25</div><div class="metric-label">Cities Adopted Playbook</div></div>
+        <div class="metric-divider"></div>
+        <div class="metric-block"><div class="metric-val">#1</div><div class="metric-label">Highest Among All Cities</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════
+     MARITIME & ENGINEERING
+════════════════════════════════════════ -->
+<section class="cases-section">
+  <div class="container">
+    <div class="cat-header reveal">
+      <div class="cat-label" style="color:var(--cat-maritime)"><div class="cat-dot" style="background:var(--cat-maritime)"></div>Maritime &amp; Engineering</div>
+      <div class="cat-title">Where it all began</div>
+    </div>
+
+    <!-- MOL ENGINE FAILURE -->
+    <div class="case-card reveal">
+      <div class="case-body">
+        <div class="case-meta">
+          <span class="case-cat" style="background:rgba(124,58,237,0.1);color:var(--cat-maritime)">Crisis Response · Maritime</span>
+          <span class="case-year">2012–2018 · International Waters</span>
+        </div>
+        <div class="case-company">MOL Maritime — Engine Failure at Sea</div>
+        <div class="case-role">Marine Navigating Officer · MOL Maritime India · Fleet of ~800 ships</div>
+        <div class="case-challenge-label">The Situation</div>
+        <p class="case-challenge">The ship's engine failed in open ocean. With no port in range and $50M in cargo and vessel value at risk, the crew needed immediate, coordinated crisis response across engineering, navigation, communications, and weather monitoring — simultaneously.</p>
+        <div class="case-actions-label">What I Did</div>
+        <ul class="case-actions">
+          <li>Assumed cross-functional coordination across 5 teams: engine room, bridge, communications, cargo, and weather monitoring</li>
+          <li>Troubleshot the engine failure in coordination with the chief engineer — maintaining clear communication channels between departments</li>
+          <li>Monitored real-time weather data to assess drift risk and coordinate with rescue coordination centers</li>
+          <li>Maintained crew composure and operational discipline throughout — preventing panic-driven errors in a high-pressure environment</li>
+        </ul>
+        <div class="case-insight">
+          <p>"There's no manual for a specific engine failure in a specific sea state. The training is the manual. When things go wrong at sea, the question isn't 'what does the procedure say' — it's 'what does the situation need.'"</p>
+        </div>
+      </div>
+      <div class="case-metrics">
+        <div class="metric-block"><div class="metric-val">$50M</div><div class="metric-label">Damages Averted</div></div>
+        <div class="metric-divider"></div>
+        <div class="metric-block"><div class="metric-val">5</div><div class="metric-label">Teams Coordinated</div></div>
+        <div class="metric-divider"></div>
+        <div class="metric-block"><div class="metric-val">1st</div><div class="metric-label">Annual Safety Award (of 40 ships)</div></div>
+      </div>
+    </div>
+
+    <!-- MOL PIRACY -->
+    <div class="case-card reveal">
+      <div class="case-body">
+        <div class="case-meta">
+          <span class="case-cat" style="background:rgba(124,58,237,0.1);color:var(--cat-maritime)">Safety Design · Maritime</span>
+          <span class="case-year">2012–2018 · Indian Ocean</span>
+        </div>
+        <div class="case-company">MOL Maritime — Piracy Evacuation Protocol</div>
+        <div class="case-role">Marine Navigating Officer · High-risk maritime corridor</div>
+        <div class="case-challenge-label">The Challenge</div>
+        <p class="case-challenge">The ship had undergone structural modifications. The existing piracy evacuation procedure — muster at assembly point, then secure the citadel — required 12 minutes total. In high-risk corridors, 3 minutes can mean the difference between safety and capture.</p>
+        <div class="case-actions-label">What I Did</div>
+        <ul class="case-actions">
+          <li>Noticed that a new generator installation had created an unintended direct exit route connecting the accommodation block to the cargo decks</li>
+          <li>Evaluated 2 potential escape routes across 6 parameters: distance, accessibility, choke points, visibility, capacity, and muster proximity</li>
+          <li>Calculated that the new route reduced transit time to the citadel by 3 minutes (30% reduction)</li>
+          <li>Presented the analysis to the captain with full documentation — received approval to update the SOP</li>
+          <li>Changes were adopted into standard operating procedures on 3 sister ships initially — later expanding to 6</li>
+        </ul>
+        <div class="case-insight">
+          <p>"Every new ship has a different geometry. Most officers learn the SOP and move on. The question I asked was: given this ship, right now, is this the fastest path? The answer was no."</p>
+        </div>
+      </div>
+      <div class="case-metrics">
+        <div class="metric-block"><div class="metric-val">30%</div><div class="metric-label">Escape Time Reduction</div></div>
+        <div class="metric-divider"></div>
+        <div class="metric-block"><div class="metric-val">3 min</div><div class="metric-label">Faster to Safety</div></div>
+        <div class="metric-divider"></div>
+        <div class="metric-block"><div class="metric-val">6</div><div class="metric-label">Ships Adopted Protocol</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════
+     INNOVATION & SYSTEMS
+════════════════════════════════════════ -->
+<section class="cases-section">
+  <div class="container">
+    <div class="cat-header reveal">
+      <div class="cat-label" style="color:var(--cat-innovation)"><div class="cat-dot" style="background:var(--cat-innovation)"></div>Innovation &amp; Systems</div>
+      <div class="cat-title">Where new tools get built</div>
+    </div>
+
+    <div class="case-card reveal">
+      <div class="case-body">
+        <div class="case-meta">
+          <span class="case-cat" style="background:rgba(234,88,12,0.1);color:var(--cat-innovation)">AI · Automation</span>
+          <span class="case-year">2024 · Toronto, Canada</span>
+        </div>
+        <div class="case-company">AI Scheduling Prototype</div>
+        <div class="case-role">Freelance · Manufacturing SMB Client</div>
+        <div class="case-challenge-label">The Challenge</div>
+        <p class="case-challenge">A manufacturing SMB was losing productivity to manual task scheduling — mismatched worker skills, machine availability, and shift patterns. The owner was spending hours per week on what should have been automated.</p>
+        <div class="case-actions-label">What I Did</div>
+        <ul class="case-actions">
+          <li>Developed an AI agent prototype to optimize task scheduling by matching worker skill profiles, machine availability, and production demand</li>
+          <li>Built using Python with scheduling optimization algorithms — independently, without a development team</li>
+          <li>Deployed a working prototype that automated weekly scheduling previously done manually</li>
+        </ul>
+        <div class="case-insight">
+          <p>"The same instinct that made me re-evaluate a piracy route — looking at a system and asking 'is there a better path?' — applies to software. The tool was just the output. The thinking was the same."</p>
+        </div>
+      </div>
+      <div class="case-metrics">
+        <div class="metric-block"><div class="metric-val">$165K</div><div class="metric-label">Annual Savings</div></div>
+        <div class="metric-divider"></div>
+        <div class="metric-block"><div class="metric-val">AI</div><div class="metric-label">Scheduling Prototype Built</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════
+     MORE STORIES — QUICK CARDS
+════════════════════════════════════════ -->
+<section class="stories-section">
+  <div class="container">
+    <div class="stories-header reveal">
+      <div class="cat-label" style="color:var(--gray-500)"><div class="cat-dot" style="background:var(--gray-500)"></div>More Stories from the Voyage</div>
+      <div class="cat-title" style="font-family:var(--font-head)">Every voyage has more chapters</div>
+    </div>
+    <div class="stories-grid">
+
+      <div class="story-card reveal">
+        <span class="story-icon">🤝</span>
+        <div class="story-title">Challenging a Superior's Strategy</div>
+        <p class="story-summary">At Blowhorn, a warehouse expansion led to inadequate facilities jeopardizing employee welfare and brand value. I researched alternatives, found better warehouses at similar cost, and presented a transition plan despite the risk of conflict.</p>
+        <div class="story-outcome">→ Transitioned warehouses · Expanded to 200 pincodes · Improved hiring</div>
+      </div>
+
+      <div class="story-card reveal" style="transition-delay:0.1s">
+        <span class="story-icon">📊</span>
+        <div class="story-title">Developing a Team During a Funding Crisis</div>
+        <p class="story-summary">Blowhorn employees hadn't received promised salary increments or equity for over a year. I ran transparent one-on-ones, created positive contribution assessments, and kept the team engaged through the uncertainty — without overpromising.</p>
+        <div class="story-outcome">→ Team retained · Culture maintained through low-cash period</div>
+      </div>
+
+      <div class="story-card reveal" style="transition-delay:0.2s">
+        <span class="story-icon">📈</span>
+        <div class="story-title">Turning a Disengaged Employee into a Top Performer</div>
+        <p class="story-summary">Rahul was performing only basic admin and had become disengaged after a colleague was fired. I linked company profitability targets to his personal career goals, empowered him to lead supply discussions, and made him feel valued for his expertise.</p>
+        <div class="story-outcome">→ Largest salary increment among top performers · Identified new margin opportunities</div>
+      </div>
+
+      <div class="story-card reveal">
+        <span class="story-icon">✈️</span>
+        <div class="story-title">240-Day High-Stakes Project Delivery</div>
+        <p class="story-summary">Inherited a restart of a previously failed project with a 240-day deadline, a $300K bonus at stake, and $100K in potential losses. Used post-mortem lessons from the prior failure to anticipate supply chain and seasonal delays — and finished in 255 days despite external issues.</p>
+        <div class="story-outcome">→ Delivered under pressure · Won project award · Changed daily habits</div>
+      </div>
+
+      <div class="story-card reveal" style="transition-delay:0.1s">
+        <span class="story-icon">🎓</span>
+        <div class="story-title">Developing Two Peers Into Leaders</div>
+        <p class="story-summary">Two highly knowledgeable early Blowhorn employees were stuck in narrow roles. I included them in leadership calls, connected them with customers, and negotiated a training budget for Excel, PowerPoint, and communication skills.</p>
+        <div class="story-outcome">→ Both promoted to Assistant Managers · Both became successful entrepreneurs</div>
+      </div>
+
+      <div class="story-card reveal" style="transition-delay:0.2s">
+        <span class="story-icon">🔧</span>
+        <div class="story-title">Recovering From a Broken Operations Launch</div>
+        <p class="story-summary">A new micro-warehousing operation with inexperienced staff dropped to 80% efficiency (target: 98%) with a daily backlog of 500 packages. I paused new intake for 15 days, redesigned delivery zones, brought in the national team lead, and cleared 1,200 packages.</p>
+        <div class="story-outcome">→ Backlog cleared · Stability restored · Recovery playbook created</div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- SKILLS + EDUCATION -->
+<div class="dual-section">
+  <div class="container">
+    <div class="dual-grid">
+
+      <div class="reveal">
+        <div class="dual-block-title">Skills &amp; Certifications</div>
+        <div class="skill-group">
+          <div class="skill-group-name">Strategy &amp; Management</div>
+          <div class="skill-tags">
+            <span class="skill-tag">Strategic Planning</span>
+            <span class="skill-tag">Executive Communication</span>
+            <span class="skill-tag">Stakeholder Management</span>
+            <span class="skill-tag">Change Management</span>
+            <span class="skill-tag">Facilitation</span>
+          </div>
+        </div>
+        <div class="skill-group">
+          <div class="skill-group-name">Operations &amp; Analytics</div>
+          <div class="skill-tags">
+            <span class="skill-tag">Lean Six Sigma (Green Belt)</span>
+            <span class="skill-tag">PMP Certified</span>
+            <span class="skill-tag">Process Optimization</span>
+            <span class="skill-tag">Root Cause Analysis</span>
+            <span class="skill-tag">Kaizen</span>
+          </div>
+        </div>
+        <div class="skill-group">
+          <div class="skill-group-name">Tools &amp; Technology</div>
+          <div class="skill-tags">
+            <span class="skill-tag">SQL (2 yrs)</span>
+            <span class="skill-tag">Python (1 yr)</span>
+            <span class="skill-tag">Power BI (1 yr)</span>
+            <span class="skill-tag">AutoCAD</span>
+            <span class="skill-tag">Excel / PowerPoint</span>
+          </div>
+        </div>
+        <div class="skill-group">
+          <div class="skill-group-name">Languages</div>
+          <div class="skill-tags">
+            <span class="skill-tag">English (Native)</span>
+            <span class="skill-tag">Hindi (Native)</span>
+            <span class="skill-tag">Punjabi (Native)</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="reveal" style="transition-delay:0.15s">
+        <div class="dual-block-title">Education</div>
+        <div class="edu-item">
+          <div class="edu-school">Rotman School of Management, University of Toronto</div>
+          <div class="edu-degree">Master of Business Administration · 2024–2026</div>
+          <div class="edu-detail">GMAT 740 (97th percentile) · GPA 3.7/4.0 (Top 25%) · CAD $30,000 merit scholarship · 2nd/12 UPP Private Equity Competition · Member: Management Consulting Association, Negotiation Club, Finance Association</div>
+        </div>
+        <div class="edu-item">
+          <div class="edu-school">Indira Gandhi National Open University</div>
+          <div class="edu-degree">Master of Commerce · 2018–2021</div>
+          <div class="edu-detail">GPA 8/10 (Top 10%) · Courses: Research Methodology &amp; Statistical Analysis, International Business Finance</div>
+        </div>
+        <div class="edu-item">
+          <div class="edu-school">Training Ship Chanakya, Indian Maritime University</div>
+          <div class="edu-degree">Bachelor of Nautical Science · 2009–2012</div>
+          <div class="edu-detail">GPA 8/10 (Top 5%) · Top 10% in IIT Joint Entrance Exam out of 300K students · CBSE National Award: $10K/yr (Top 5% of 1.7M) · Prime Minister Ex-Servicemen Award: $6K/yr (Top 8% of 50K)</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- CTA -->
+<section class="cta-section">
+  <div class="container">
+    <div class="cta-inner reveal">
+      <h2 class="cta-title">Let's navigate <em>something complex</em> together.</h2>
+      <p class="cta-sub">Available for strategy, operations, and transformation projects. Graduating from Rotman MBA in 2026. Open to roles across consulting, strategy, and operations leadership.</p>
+      <div class="cta-btns">
+        <a href="mailto:apsgill6891@gmail.com" class="btn-primary">Send a Message</a>
+        <a href="index.html" class="btn-outline">← Back to Home</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <span class="footer-brand">Anmol Gill</span>
+  <span class="footer-copy">Built with curiosity and caffeine.</span>
+  <div class="footer-links">
+    <a href="index.html">Home</a>
+    <a href="mailto:apsgill6891@gmail.com">Email</a>
+    <a href="https://linkedin.com/in/anmolpreetsinghgill" target="_blank" rel="noopener">LinkedIn</a>
+  </div>
+</footer>
+
+<script>
+  const io = new IntersectionObserver(entries => entries.forEach(e => { if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)} }), {threshold:0.08,rootMargin:'0px 0px -30px 0px'});
+  document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+</script>
+</body>
+</html>
