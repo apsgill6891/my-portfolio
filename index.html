@@ -48,9 +48,10 @@
     .dark-title{color:var(--white)}
     .dark-title em{color:var(--gold)}
 
-    /* SCROLL REVEAL */
-    .reveal{opacity:0;transform:translateY(28px);transition:opacity 0.7s var(--ease),transform 0.7s var(--ease)}
-    .reveal.in{opacity:1;transform:none}
+    /* SCROLL REVEAL — progressive enhancement: content always visible without JS */
+    .reveal{transition:opacity 0.7s var(--ease),transform 0.7s var(--ease)}
+    .js-pe .reveal{opacity:0;transform:translateY(28px)}
+    .reveal.in{opacity:1!important;transform:none!important}
 
     /* CUSTOM CURSOR */
     #cursor{
@@ -272,6 +273,8 @@
       #cursor,#cursor-ring{display:none}
     }
   </style>
+  <!-- Progressive enhancement: add js-pe class immediately so reveals can be hidden by JS -->
+  <script>document.documentElement.classList.add('js-pe');</script>
 </head>
 <body>
 
@@ -655,11 +658,16 @@
   const nav = document.getElementById('nav');
   window.addEventListener('scroll', () => nav.classList.toggle('scrolled', window.scrollY > 60), {passive:true});
 
-  /* ── Scroll reveal (clip-path wipe) — runs immediately, no CDN dependency ── */
+  /* ── Scroll reveal — runs immediately, no CDN dependency ── */
   const io = new IntersectionObserver(entries => {
     entries.forEach(e => { if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } });
-  }, {threshold:0.08, rootMargin:'0px 0px -32px 0px'});
+  }, {threshold:0.05, rootMargin:'0px 0px -20px 0px'});
   document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+
+  /* ── Safety net: force-reveal anything still hidden after 2s ── */
+  setTimeout(function(){
+    document.querySelectorAll('.reveal:not(.in)').forEach(function(el){ el.classList.add('in'); });
+  }, 2000);
 
   /* ── Custom cursor ── */
   const cursor = document.getElementById('cursor');
