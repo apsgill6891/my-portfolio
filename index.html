@@ -655,19 +655,12 @@
   </ul>
 </footer>
 
-<!-- Lenis smooth scroll -->
-<script src="https://unpkg.com/@studio-freight/lenis@1.0.42/dist/lenis.min.js"></script>
 <script>
-  /* ── Lenis smooth scroll ── */
-  const lenis = new Lenis({ lerp: 0.08, smoothWheel: true });
-  function raf(time){ lenis.raf(time); requestAnimationFrame(raf); }
-  requestAnimationFrame(raf);
-
   /* ── Nav scroll state ── */
   const nav = document.getElementById('nav');
   window.addEventListener('scroll', () => nav.classList.toggle('scrolled', window.scrollY > 60), {passive:true});
 
-  /* ── Scroll reveal (clip-path wipe) ── */
+  /* ── Scroll reveal (clip-path wipe) — runs immediately, no CDN dependency ── */
   const io = new IntersectionObserver(entries => {
     entries.forEach(e => { if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } });
   }, {threshold:0.08, rootMargin:'0px 0px -32px 0px'});
@@ -678,13 +671,11 @@
   const ring   = document.getElementById('cursor-ring');
   let mx=window.innerWidth/2, my=window.innerHeight/2;
   let rx=mx, ry=my;
-
   document.addEventListener('mousemove', e => {
     mx = e.clientX; my = e.clientY;
     cursor.style.left = mx + 'px';
     cursor.style.top  = my + 'px';
   }, {passive:true});
-
   (function animRing(){
     rx += (mx - rx) * 0.12;
     ry += (my - ry) * 0.12;
@@ -692,13 +683,14 @@
     ring.style.top  = ry + 'px';
     requestAnimationFrame(animRing);
   })();
-
-  /* enlarge cursor on interactive elements */
   const hoverTargets = 'a, button, .principle-card, .cap-card, .work-card, .stop, .cred-item, .marquee-strip';
   document.querySelectorAll(hoverTargets).forEach(el => {
     el.addEventListener('mouseenter', () => cursor.classList.add('hovering'));
     el.addEventListener('mouseleave', () => cursor.classList.remove('hovering'));
   });
 </script>
+
+<!-- Lenis smooth scroll — loaded last, non-blocking, won't break the page if CDN is slow -->
+<script src="https://unpkg.com/@studio-freight/lenis@1.0.42/dist/lenis.min.js" onload="(function(){ const l=new Lenis({lerp:0.08,smoothWheel:true}); function r(t){l.raf(t);requestAnimationFrame(r)} requestAnimationFrame(r); })()"></script>
 </body>
 </html>

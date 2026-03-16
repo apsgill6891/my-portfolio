@@ -696,15 +696,8 @@
   </div>
 </footer>
 
-<!-- Lenis smooth scroll -->
-<script src="https://unpkg.com/@studio-freight/lenis@1.0.42/dist/lenis.min.js"></script>
 <script>
-  /* ── Lenis smooth scroll ── */
-  const lenis = new Lenis({ lerp: 0.08, smoothWheel: true });
-  function raf(time){ lenis.raf(time); requestAnimationFrame(raf); }
-  requestAnimationFrame(raf);
-
-  /* ── Scroll reveal (clip-path wipe) ── */
+  /* ── Scroll reveal — runs immediately, no CDN dependency ── */
   const io = new IntersectionObserver(entries => {
     entries.forEach(e => { if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } });
   }, {threshold:0.08, rootMargin:'0px 0px -30px 0px'});
@@ -715,13 +708,11 @@
   const ring   = document.getElementById('cursor-ring');
   let mx=window.innerWidth/2, my=window.innerHeight/2;
   let rx=mx, ry=my;
-
   document.addEventListener('mousemove', e => {
     mx = e.clientX; my = e.clientY;
     cursor.style.left = mx + 'px';
     cursor.style.top  = my + 'px';
   }, {passive:true});
-
   (function animRing(){
     rx += (mx - rx) * 0.12;
     ry += (my - ry) * 0.12;
@@ -729,11 +720,13 @@
     ring.style.top  = ry + 'px';
     requestAnimationFrame(animRing);
   })();
-
-  document.querySelectorAll('a, button, .cs-card, .qs-card, .filter-btn').forEach(el => {
+  document.querySelectorAll('a, button, .case-card, .story-card, .skill-tag').forEach(el => {
     el.addEventListener('mouseenter', () => cursor.classList.add('hovering'));
     el.addEventListener('mouseleave', () => cursor.classList.remove('hovering'));
   });
 </script>
+
+<!-- Lenis — loaded last, non-blocking -->
+<script src="https://unpkg.com/@studio-freight/lenis@1.0.42/dist/lenis.min.js" onload="(function(){ const l=new Lenis({lerp:0.08,smoothWheel:true}); function r(t){l.raf(t);requestAnimationFrame(r)} requestAnimationFrame(r); })()"></script>
 </body>
 </html>
