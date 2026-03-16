@@ -48,14 +48,9 @@
     .dark-title{color:var(--white)}
     .dark-title em{color:var(--gold)}
 
-    /* SCROLL REVEAL — clip-path wipe */
-    .reveal{
-      opacity:0;
-      clip-path:inset(0 0 100% 0);
-      transform:translateY(16px);
-      transition:opacity 0.75s var(--ease-out),clip-path 0.75s var(--ease-out),transform 0.75s var(--ease-out)
-    }
-    .reveal.in{opacity:1;clip-path:inset(0 0 0% 0);transform:none}
+    /* SCROLL REVEAL */
+    .reveal{opacity:0;transform:translateY(28px);transition:opacity 0.7s var(--ease),transform 0.7s var(--ease)}
+    .reveal.in{opacity:1;transform:none}
 
     /* CUSTOM CURSOR */
     #cursor{
