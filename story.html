@@ -9,7 +9,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400;1,600&display=swap" rel="stylesheet" />
   <style>
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-    html{scroll-behavior:smooth;-webkit-font-smoothing:antialiased}
+    html{-webkit-font-smoothing:antialiased}
     a{text-decoration:none;color:inherit}
     ul{list-style:none}
 
@@ -28,13 +28,21 @@
       --font-body:'Inter',sans-serif;
       --font-quote:'Cormorant Garamond',serif;
       --ease:cubic-bezier(0.25,0.46,0.45,0.94);
+      --ease-out:cubic-bezier(0.16,1,0.3,1);
     }
 
-    body{font-family:var(--font-body);background:var(--cream);color:var(--navy);overflow-x:hidden}
+    body{font-family:var(--font-body);background:var(--cream);color:var(--navy);overflow-x:hidden;cursor:none}
     .container{max-width:1200px;margin:0 auto;padding:0 clamp(24px,6vw,80px)}
 
-    .reveal{opacity:0;transform:translateY(28px);transition:opacity 0.7s var(--ease),transform 0.7s var(--ease)}
-    .reveal.in{opacity:1;transform:none}
+    /* clip-path wipe reveal — matches index.html */
+    .reveal{opacity:0;clip-path:inset(0 0 100% 0);transform:translateY(16px);transition:opacity 0.75s var(--ease-out),clip-path 0.75s var(--ease-out),transform 0.75s var(--ease-out)}
+    .reveal.in{opacity:1;clip-path:inset(0 0 0% 0);transform:none}
+
+    /* CUSTOM CURSOR */
+    #cursor{position:fixed;width:10px;height:10px;background:var(--gold);border-radius:50%;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);transition:width 0.3s var(--ease),height 0.3s var(--ease),background 0.3s;will-change:transform}
+    #cursor.hovering{width:48px;height:48px;background:rgba(201,166,75,0.15);border:1px solid rgba(201,166,75,0.6)}
+    #cursor-ring{position:fixed;width:36px;height:36px;border:1px solid rgba(201,166,75,0.35);border-radius:50%;pointer-events:none;z-index:9998;transform:translate(-50%,-50%);will-change:transform}
+    @media(max-width:640px){body{cursor:auto}#cursor,#cursor-ring{display:none}}
 
     /* NAV */
     #nav{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;align-items:center;justify-content:space-between;padding:22px clamp(24px,5vw,64px);background:rgba(255,255,255,0.96);backdrop-filter:blur(16px);box-shadow:0 1px 0 var(--navy-10)}
@@ -154,6 +162,10 @@
   </style>
 </head>
 <body>
+
+<!-- CUSTOM CURSOR -->
+<div id="cursor"></div>
+<div id="cursor-ring"></div>
 
 <!-- NAV -->
 <nav id="nav">
@@ -684,9 +696,44 @@
   </div>
 </footer>
 
+<!-- Lenis smooth scroll -->
+<script src="https://unpkg.com/@studio-freight/lenis@1.0.42/dist/lenis.min.js"></script>
 <script>
-  const io = new IntersectionObserver(entries => entries.forEach(e => { if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)} }), {threshold:0.08,rootMargin:'0px 0px -30px 0px'});
+  /* ── Lenis smooth scroll ── */
+  const lenis = new Lenis({ lerp: 0.08, smoothWheel: true });
+  function raf(time){ lenis.raf(time); requestAnimationFrame(raf); }
+  requestAnimationFrame(raf);
+
+  /* ── Scroll reveal (clip-path wipe) ── */
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(e => { if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } });
+  }, {threshold:0.08, rootMargin:'0px 0px -30px 0px'});
   document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+
+  /* ── Custom cursor ── */
+  const cursor = document.getElementById('cursor');
+  const ring   = document.getElementById('cursor-ring');
+  let mx=window.innerWidth/2, my=window.innerHeight/2;
+  let rx=mx, ry=my;
+
+  document.addEventListener('mousemove', e => {
+    mx = e.clientX; my = e.clientY;
+    cursor.style.left = mx + 'px';
+    cursor.style.top  = my + 'px';
+  }, {passive:true});
+
+  (function animRing(){
+    rx += (mx - rx) * 0.12;
+    ry += (my - ry) * 0.12;
+    ring.style.left = rx + 'px';
+    ring.style.top  = ry + 'px';
+    requestAnimationFrame(animRing);
+  })();
+
+  document.querySelectorAll('a, button, .cs-card, .qs-card, .filter-btn').forEach(el => {
+    el.addEventListener('mouseenter', () => cursor.classList.add('hovering'));
+    el.addEventListener('mouseleave', () => cursor.classList.remove('hovering'));
+  });
 </script>
 </body>
 </html>

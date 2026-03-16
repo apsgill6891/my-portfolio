@@ -9,7 +9,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400;1,600&display=swap" rel="stylesheet" />
   <style>
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-    html{scroll-behavior:smooth;-webkit-font-smoothing:antialiased}
+    html{-webkit-font-smoothing:antialiased}
     img,svg{display:block;max-width:100%}
     a{text-decoration:none;color:inherit}
     ul{list-style:none}
@@ -25,9 +25,10 @@
       --font-body:'Inter',sans-serif;
       --font-quote:'Cormorant Garamond',serif;
       --ease:cubic-bezier(0.25,0.46,0.45,0.94);
+      --ease-out:cubic-bezier(0.16,1,0.3,1);
     }
 
-    body{font-family:var(--font-body);background:var(--cream);color:var(--navy);overflow-x:hidden}
+    body{font-family:var(--font-body);background:var(--cream);color:var(--navy);overflow-x:hidden;cursor:none}
 
     .container{max-width:1200px;margin:0 auto;padding:0 clamp(24px,6vw,80px)}
     section{padding:clamp(80px,11vw,130px) 0}
@@ -40,15 +41,35 @@
     .section-kicker::before{content:'';display:block;width:24px;height:1px;background:var(--gold);flex-shrink:0}
 
     .section-title{
-      font-family:var(--font-head);font-size:clamp(2.2rem,4.5vw,3.8rem);
-      font-weight:700;letter-spacing:-0.03em;line-height:1.05;color:var(--navy)
+      font-family:var(--font-head);font-size:clamp(2.4rem,5vw,4.2rem);
+      font-weight:700;letter-spacing:-0.05em;line-height:1.0;color:var(--navy)
     }
     .section-title em{font-style:italic;color:var(--ocean);font-weight:600}
     .dark-title{color:var(--white)}
     .dark-title em{color:var(--gold)}
 
-    .reveal{opacity:0;transform:translateY(32px);transition:opacity 0.7s var(--ease),transform 0.7s var(--ease)}
-    .reveal.in{opacity:1;transform:none}
+    /* SCROLL REVEAL — clip-path wipe */
+    .reveal{
+      opacity:0;
+      clip-path:inset(0 0 100% 0);
+      transform:translateY(16px);
+      transition:opacity 0.75s var(--ease-out),clip-path 0.75s var(--ease-out),transform 0.75s var(--ease-out)
+    }
+    .reveal.in{opacity:1;clip-path:inset(0 0 0% 0);transform:none}
+
+    /* CUSTOM CURSOR */
+    #cursor{
+      position:fixed;width:10px;height:10px;background:var(--gold);border-radius:50%;
+      pointer-events:none;z-index:9999;transform:translate(-50%,-50%);
+      transition:width 0.3s var(--ease),height 0.3s var(--ease),background 0.3s,opacity 0.3s;
+      will-change:transform
+    }
+    #cursor.hovering{width:48px;height:48px;background:rgba(201,166,75,0.15);border:1px solid rgba(201,166,75,0.6)}
+    #cursor-ring{
+      position:fixed;width:36px;height:36px;border:1px solid rgba(201,166,75,0.35);
+      border-radius:50%;pointer-events:none;z-index:9998;transform:translate(-50%,-50%);
+      will-change:transform;transition:opacity 0.3s
+    }
 
     /* NAV */
     #nav{
@@ -60,13 +81,27 @@
     #nav.scrolled{background:rgba(255,255,255,0.96);backdrop-filter:blur(16px);box-shadow:0 1px 0 var(--navy-10)}
     .nav-logo{font-family:var(--font-head);font-size:0.88rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--white);transition:color 0.4s}
     #nav.scrolled .nav-logo{color:var(--navy)}
-    .nav-links{display:flex;gap:36px}
-    .nav-links a{font-size:0.72rem;font-weight:500;letter-spacing:0.12em;text-transform:uppercase;color:rgba(255,255,255,0.7);transition:color 0.3s}
+    .nav-links{display:flex;gap:36px;position:relative}
+    .nav-link-item{position:relative}
+    .nav-links a{font-size:0.72rem;font-weight:500;letter-spacing:0.12em;text-transform:uppercase;color:rgba(255,255,255,0.7);transition:color 0.3s;display:block;padding:4px 0}
     #nav.scrolled .nav-links a{color:var(--gray-500)}
     .nav-links a:hover,#nav.scrolled .nav-links a:hover{color:var(--gold)}
     .nav-cta{font-size:0.7rem;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:var(--white);border:1px solid rgba(255,255,255,0.3);padding:9px 22px;transition:all 0.3s}
     #nav.scrolled .nav-cta{color:var(--navy);border-color:var(--navy-10)}
     .nav-cta:hover{background:var(--gold)!important;color:var(--navy)!important;border-color:var(--gold)!important}
+
+    /* NAV HOVER PREVIEW */
+    .nav-preview{
+      position:absolute;top:calc(100% + 16px);left:50%;transform:translateX(-50%);
+      background:var(--navy);border:1px solid rgba(201,166,75,0.2);padding:20px 24px;
+      min-width:200px;pointer-events:none;
+      opacity:0;clip-path:inset(0 0 100% 0);
+      transition:opacity 0.3s var(--ease),clip-path 0.3s var(--ease-out)
+    }
+    .nav-link-item:hover .nav-preview{opacity:1;clip-path:inset(0 0 0% 0)}
+    .np-label{font-size:0.6rem;font-weight:600;letter-spacing:0.2em;text-transform:uppercase;color:rgba(201,166,75,0.7);margin-bottom:10px}
+    .np-stat{font-family:var(--font-head);font-size:1.4rem;font-weight:700;color:var(--white);letter-spacing:-0.04em;line-height:1.2}
+    .np-sub{font-size:0.72rem;color:rgba(255,255,255,0.4);margin-top:4px}
 
     /* HERO */
     #hero{background:var(--navy);min-height:100vh;display:flex;flex-direction:column;justify-content:center;position:relative;overflow:hidden;padding-top:100px}
@@ -75,7 +110,11 @@
 
     .hero-inner{display:grid;grid-template-columns:1fr 400px;gap:60px;align-items:center;padding-bottom:clamp(60px,8vw,100px)}
     .hero-tag{font-size:0.72rem;font-weight:500;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold);margin-bottom:28px;opacity:0;animation:fadeUp 0.8s 0.2s var(--ease) forwards}
-    .hero-headline{font-family:var(--font-head);font-size:clamp(4rem,9vw,8rem);font-weight:700;letter-spacing:-0.04em;line-height:0.92;color:var(--white);margin-bottom:32px;opacity:0;animation:fadeUp 0.9s 0.35s var(--ease) forwards}
+    .hero-headline{
+      font-family:var(--font-head);font-size:clamp(4.5rem,10vw,9.5rem);
+      font-weight:700;letter-spacing:-0.06em;line-height:0.88;color:var(--white);
+      margin-bottom:32px;opacity:0;animation:fadeUp 0.9s 0.35s var(--ease) forwards
+    }
     .hero-headline .accent{color:var(--gold);display:block}
     .hero-sub{font-size:clamp(1rem,1.5vw,1.12rem);line-height:1.75;color:rgba(255,255,255,0.52);max-width:520px;margin-bottom:44px;opacity:0;animation:fadeUp 0.9s 0.5s var(--ease) forwards}
     .hero-actions{display:flex;gap:16px;flex-wrap:wrap;opacity:0;animation:fadeUp 0.9s 0.65s var(--ease) forwards}
@@ -90,7 +129,7 @@
     .btn-outline-gold:hover{background:var(--gold);color:var(--navy);transform:translateY(-2px)}
 
     .hero-compass{position:relative;display:flex;align-items:center;justify-content:center;opacity:0;animation:fadeIn 1.2s 0.8s var(--ease) forwards}
-    .hero-scroll{position:absolute;bottom:40px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:10px;color:rgba(255,255,255,0.28);font-size:0.65rem;letter-spacing:0.2em;text-transform:uppercase;opacity:0;animation:fadeIn 1s 1.4s var(--ease) forwards;cursor:pointer}
+    .hero-scroll{position:absolute;bottom:40px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:10px;color:rgba(255,255,255,0.28);font-size:0.65rem;letter-spacing:0.2em;text-transform:uppercase;opacity:0;animation:fadeIn 1s 1.4s var(--ease) forwards;cursor:none}
     .scroll-bar{width:1px;height:44px;background:linear-gradient(rgba(201,166,75,0.6),transparent);animation:pulsebar 2s ease-in-out infinite}
 
     @keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
@@ -100,6 +139,7 @@
 
     /* MARQUEE */
     .marquee-strip{background:var(--gold);overflow:hidden;display:flex}
+    .marquee-strip:hover .marquee-track{animation-play-state:paused}
     .marquee-track{display:flex;align-items:center;animation:marquee 30s linear infinite;white-space:nowrap}
     .marquee-track span{font-family:var(--font-head);font-size:0.7rem;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--navy);padding:14px 24px}
     .msep{color:rgba(11,31,59,0.3);padding:14px 4px!important}
@@ -113,8 +153,9 @@
     .about-bio{font-size:1.02rem;line-height:1.85;color:var(--gray-700);margin-bottom:20px}
     .about-bio strong{color:var(--navy)}
     .cred-row{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--navy-10);border:1px solid var(--navy-10);margin-top:44px}
-    .cred-item{background:var(--cream);padding:24px 20px;text-align:center}
-    .cred-num{font-family:var(--font-head);font-size:2.2rem;font-weight:700;letter-spacing:-0.04em;color:var(--navy);line-height:1;display:block;margin-bottom:6px}
+    .cred-item{background:var(--cream);padding:24px 20px;text-align:center;transition:background 0.25s}
+    .cred-item:hover{background:#eef0f4}
+    .cred-num{font-family:var(--font-head);font-size:2.4rem;font-weight:700;letter-spacing:-0.05em;color:var(--navy);line-height:1;display:block;margin-bottom:6px}
     .cred-label{font-size:0.68rem;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:var(--gray-500)}
 
     /* JOURNEY */
@@ -123,7 +164,7 @@
     .timeline-outer{overflow-x:auto;padding-bottom:16px;-webkit-overflow-scrolling:touch}
     .timeline{display:grid;grid-template-columns:repeat(5,1fr);gap:0;position:relative;min-width:860px}
     .timeline::before{content:'';position:absolute;top:10px;left:5%;right:5%;height:1px;background:repeating-linear-gradient(90deg,rgba(201,166,75,0.5) 0,rgba(201,166,75,0.5) 5px,transparent 5px,transparent 14px)}
-    .stop{padding:40px 20px 0;position:relative;cursor:default}
+    .stop{padding:40px 20px 0;position:relative;cursor:none}
     .stop-dot{width:20px;height:20px;border-radius:50%;background:var(--navy);border:2px solid var(--gold);position:absolute;top:0;left:50%;transform:translateX(-50%);z-index:2;transition:box-shadow 0.3s}
     .stop:hover .stop-dot{box-shadow:0 0 0 6px rgba(201,166,75,0.2)}
     .stop-year{font-size:0.65rem;font-weight:700;letter-spacing:0.15em;color:var(--gold);text-transform:uppercase;margin-bottom:8px}
@@ -136,14 +177,22 @@
     #principles{background:var(--white)}
     .principles-header{margin-bottom:64px}
     .principles-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--navy-10);border:1px solid var(--navy-10);margin-bottom:64px}
-    .principle-card{background:var(--white);padding:40px 32px;transition:background 0.3s;position:relative}
-    .principle-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--gold);transform:scaleX(0);transform-origin:left;transition:transform 0.3s}
+    .principle-card{background:var(--white);padding:40px 32px;transition:background 0.3s;position:relative;overflow:hidden;cursor:none}
+    .principle-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--gold);transform:scaleX(0);transform-origin:left;transition:transform 0.4s var(--ease-out)}
+    /* clip-path reveal overlay on hover */
+    .principle-card::after{
+      content:'';position:absolute;inset:0;
+      background:linear-gradient(135deg,rgba(201,166,75,0.06),rgba(47,128,237,0.04));
+      clip-path:inset(100% 0 0 0);
+      transition:clip-path 0.5s var(--ease-out)
+    }
     .principle-card:hover{background:#FAFBFC}
     .principle-card:hover::before{transform:scaleX(1)}
-    .principle-icon{font-size:1.6rem;margin-bottom:20px;display:block}
-    .principle-title{font-family:var(--font-head);font-size:1.02rem;font-weight:700;color:var(--navy);margin-bottom:12px}
-    .principle-body{font-size:0.88rem;line-height:1.8;color:var(--gray-500)}
-    .principle-origin{margin-top:14px;font-size:0.72rem;font-style:italic;color:var(--gold);font-family:var(--font-quote)}
+    .principle-card:hover::after{clip-path:inset(0 0 0 0)}
+    .principle-icon{font-size:1.6rem;margin-bottom:20px;display:block;position:relative;z-index:1}
+    .principle-title{font-family:var(--font-head);font-size:1.08rem;font-weight:700;color:var(--navy);margin-bottom:12px;letter-spacing:-0.03em;position:relative;z-index:1}
+    .principle-body{font-size:0.88rem;line-height:1.8;color:var(--gray-500);position:relative;z-index:1}
+    .principle-origin{margin-top:14px;font-size:0.72rem;font-style:italic;color:var(--gold);font-family:var(--font-quote);position:relative;z-index:1}
     .maritime-quote{border-left:2px solid var(--gold);padding:24px 32px;background:var(--gold-10);max-width:700px;margin:0 auto}
     .maritime-quote p{font-family:var(--font-quote);font-size:1.4rem;font-style:italic;color:var(--navy);line-height:1.5;margin-bottom:12px}
     .maritime-quote cite{font-size:0.72rem;font-style:normal;letter-spacing:0.12em;text-transform:uppercase;color:var(--gold)}
@@ -152,33 +201,49 @@
     #capabilities{background:var(--navy)}
     .cap-header{margin-bottom:64px;display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:24px}
     .cap-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.06)}
-    .cap-card{background:rgba(255,255,255,0.025);padding:40px 32px;transition:background 0.3s;position:relative;overflow:hidden}
-    .cap-card::after{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);transform:scaleX(0);transition:transform 0.4s}
-    .cap-card:hover{background:rgba(255,255,255,0.05)}
+    .cap-card{background:rgba(255,255,255,0.025);padding:40px 32px;position:relative;overflow:hidden;cursor:none}
+    /* top-line shimmer */
+    .cap-card::after{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);transform:scaleX(0);transition:transform 0.5s var(--ease-out)}
+    /* clip-path background reveal */
+    .cap-card-bg{position:absolute;inset:0;background:rgba(255,255,255,0.05);clip-path:inset(100% 0 0 0);transition:clip-path 0.5s var(--ease-out)}
+    .cap-card:hover .cap-card-bg{clip-path:inset(0 0 0 0)}
     .cap-card:hover::after{transform:scaleX(1)}
-    .cap-icon{width:40px;height:40px;margin-bottom:24px;color:var(--gold)}
-    .cap-title{font-family:var(--font-head);font-size:1.08rem;font-weight:700;color:var(--white);margin-bottom:12px}
-    .cap-body{font-size:0.88rem;line-height:1.75;color:rgba(255,255,255,0.48)}
-    .cap-num{position:absolute;bottom:20px;right:24px;font-family:var(--font-head);font-size:4rem;font-weight:700;color:rgba(255,255,255,0.04);line-height:1;user-select:none}
+    .cap-icon{width:40px;height:40px;margin-bottom:24px;color:var(--gold);position:relative;z-index:1}
+    .cap-title{font-family:var(--font-head);font-size:1.1rem;font-weight:700;color:var(--white);margin-bottom:12px;letter-spacing:-0.03em;position:relative;z-index:1}
+    .cap-body{font-size:0.88rem;line-height:1.75;color:rgba(255,255,255,0.48);position:relative;z-index:1}
+    .cap-num{position:absolute;bottom:20px;right:24px;font-family:var(--font-head);font-size:4rem;font-weight:700;color:rgba(255,255,255,0.04);line-height:1;user-select:none;z-index:0}
 
     /* WORK */
     #work{background:var(--cream)}
     .work-header{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:56px;flex-wrap:wrap;gap:24px}
     .work-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
-    .work-card{background:var(--white);border:1px solid var(--navy-10);padding:36px 32px;display:flex;flex-direction:column;transition:transform 0.25s var(--ease),box-shadow 0.25s var(--ease),border-color 0.25s;position:relative;overflow:hidden}
-    .work-card:hover{transform:translateY(-6px);box-shadow:0 24px 48px rgba(11,31,59,0.1)}
-    .work-card-tag{font-size:0.65rem;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:var(--ocean);margin-bottom:16px}
-    .work-card-company{font-family:var(--font-head);font-size:1.2rem;font-weight:700;color:var(--navy);margin-bottom:8px}
-    .work-card-desc{font-size:0.88rem;line-height:1.75;color:var(--gray-500);flex:1;margin-bottom:24px}
-    .work-card-metric{font-family:var(--font-head);font-size:2rem;font-weight:700;letter-spacing:-0.04em;color:var(--navy);margin-bottom:4px}
-    .work-card-metric-label{font-size:0.68rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--gray-500)}
-    .work-card-arrow{position:absolute;bottom:28px;right:28px;font-size:1.2rem;color:rgba(11,31,59,0.25);transition:transform 0.25s,color 0.25s}
-    .work-card:hover .work-card-arrow{transform:translate(3px,-3px);color:var(--ocean)}
+    .work-card{
+      background:var(--white);border:1px solid var(--navy-10);padding:36px 32px;
+      display:flex;flex-direction:column;position:relative;overflow:hidden;cursor:none;
+      transition:transform 0.35s var(--ease-out),box-shadow 0.35s var(--ease-out),border-color 0.35s
+    }
+    /* clip-path gradient reveal from bottom */
+    .work-card-reveal{
+      position:absolute;inset:0;
+      background:linear-gradient(to top,rgba(47,128,237,0.08),transparent 60%);
+      clip-path:inset(100% 0 0 0);
+      transition:clip-path 0.5s var(--ease-out);
+      pointer-events:none
+    }
+    .work-card:hover .work-card-reveal{clip-path:inset(0 0 0 0)}
+    .work-card:hover{transform:translateY(-8px);box-shadow:0 32px 64px rgba(11,31,59,0.12);border-color:rgba(47,128,237,0.2)}
+    .work-card-tag{font-size:0.65rem;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:var(--ocean);margin-bottom:16px;position:relative;z-index:1}
+    .work-card-company{font-family:var(--font-head);font-size:1.3rem;font-weight:700;color:var(--navy);margin-bottom:8px;letter-spacing:-0.04em;position:relative;z-index:1}
+    .work-card-desc{font-size:0.88rem;line-height:1.75;color:var(--gray-500);flex:1;margin-bottom:24px;position:relative;z-index:1}
+    .work-card-metric{font-family:var(--font-head);font-size:2.2rem;font-weight:700;letter-spacing:-0.05em;color:var(--navy);margin-bottom:4px;position:relative;z-index:1}
+    .work-card-metric-label{font-size:0.68rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--gray-500);position:relative;z-index:1}
+    .work-card-arrow{position:absolute;bottom:28px;right:28px;font-size:1.2rem;color:rgba(11,31,59,0.2);transition:transform 0.3s var(--ease-out),color 0.3s;z-index:1}
+    .work-card:hover .work-card-arrow{transform:translate(4px,-4px);color:var(--ocean)}
 
     /* CONTACT */
     #contact{background:var(--navy);padding:clamp(80px,11vw,140px) 0}
     .contact-inner{max-width:760px;margin:0 auto;text-align:center}
-    .contact-title{font-family:var(--font-head);font-size:clamp(2.4rem,5.5vw,5rem);font-weight:700;letter-spacing:-0.04em;color:var(--white);line-height:1;margin-bottom:24px}
+    .contact-title{font-family:var(--font-head);font-size:clamp(2.8rem,6.5vw,6rem);font-weight:700;letter-spacing:-0.05em;color:var(--white);line-height:0.95;margin-bottom:24px}
     .contact-title em{color:var(--gold);font-style:italic}
     .contact-sub{font-size:1.02rem;line-height:1.75;color:rgba(255,255,255,0.48);margin-bottom:48px}
     .contact-btns{display:flex;gap:16px;justify-content:center;flex-wrap:wrap}
@@ -201,25 +266,60 @@
       .cap-grid{grid-template-columns:repeat(2,1fr)}
       .work-grid{grid-template-columns:1fr}
       .principles-grid{grid-template-columns:repeat(2,1fr)}
+      .nav-preview{display:none}
     }
     @media(max-width:640px){
       .nav-links{display:none}
       .cred-row{grid-template-columns:repeat(2,1fr)}
       .cap-grid{grid-template-columns:1fr}
       .principles-grid{grid-template-columns:1fr}
+      body{cursor:auto}
+      #cursor,#cursor-ring{display:none}
     }
   </style>
 </head>
 <body>
 
+<!-- CUSTOM CURSOR -->
+<div id="cursor"></div>
+<div id="cursor-ring"></div>
+
 <!-- NAV -->
 <nav id="nav">
   <a href="index.html" class="nav-logo">Anmol Gill</a>
   <ul class="nav-links">
-    <li><a href="#navigator">About</a></li>
-    <li><a href="#journey">Journey</a></li>
-    <li><a href="#capabilities">Capabilities</a></li>
-    <li><a href="story.html">Case Studies</a></li>
+    <li class="nav-link-item">
+      <a href="#navigator">About</a>
+      <div class="nav-preview">
+        <div class="np-label">The Navigator</div>
+        <div class="np-stat">12 yrs · 5 industries</div>
+        <div class="np-sub">GMAT 740 · Rotman MBA</div>
+      </div>
+    </li>
+    <li class="nav-link-item">
+      <a href="#journey">Journey</a>
+      <div class="nav-preview">
+        <div class="np-label">Career Voyage</div>
+        <div class="np-stat">MOL → Blowhorn → Delhivery</div>
+        <div class="np-sub">Cascade → Rotman</div>
+      </div>
+    </li>
+    <li class="nav-link-item">
+      <a href="#capabilities">Capabilities</a>
+      <div class="nav-preview">
+        <div class="np-label">What I bring</div>
+        <div class="np-stat">Strategy · Ops · Leadership</div>
+        <div class="np-sub">PMP · Lean Six Sigma</div>
+      </div>
+    </li>
+    <li class="nav-link-item">
+      <a href="story.html">Case Studies</a>
+      <div class="nav-preview">
+        <div class="np-label">Impact</div>
+        <div class="np-stat">$270M · $135M · $50M</div>
+        <div class="np-sub">11 detailed case studies</div>
+      </div>
+    </li>
   </ul>
   <a href="story.html" class="nav-cta">View Work →</a>
 </nav>
@@ -246,7 +346,6 @@
         <circle cx="150" cy="150" r="145" stroke="rgba(201,166,75,0.2)" stroke-width="1"/>
         <circle cx="150" cy="150" r="128" stroke="rgba(201,166,75,0.07)" stroke-width="1" stroke-dasharray="4 9"/>
         <circle cx="150" cy="150" r="72"  stroke="rgba(201,166,75,0.1)"  stroke-width="1"/>
-        <!-- static ticks -->
         <line x1="150" y1="5"   x2="150" y2="20"  stroke="rgba(201,166,75,0.5)"  stroke-width="1.5"/>
         <line x1="150" y1="280" x2="150" y2="295" stroke="rgba(201,166,75,0.25)" stroke-width="1.5"/>
         <line x1="5"   y1="150" x2="20"  y2="150" stroke="rgba(201,166,75,0.25)" stroke-width="1.5"/>
@@ -255,7 +354,6 @@
         <line x1="253" y1="47"  x2="242" y2="58"  stroke="rgba(201,166,75,0.18)" stroke-width="1"/>
         <line x1="47"  y1="253" x2="58"  y2="242" stroke="rgba(201,166,75,0.18)" stroke-width="1"/>
         <line x1="253" y1="253" x2="242" y2="242" stroke="rgba(201,166,75,0.18)" stroke-width="1"/>
-        <!-- rotating group -->
         <g style="transform-origin:150px 150px;animation:spin 30s linear infinite">
           <polygon points="150,26 157,150 150,138 143,150" fill="#C9A64B"/>
           <polygon points="150,274 157,150 150,162 143,150" fill="rgba(201,166,75,0.22)"/>
@@ -448,36 +546,42 @@
     </div>
     <div class="cap-grid">
       <div class="cap-card reveal">
+        <div class="cap-card-bg"></div>
         <svg class="cap-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/><circle cx="12" cy="12" r="3"/></svg>
         <div class="cap-title">Strategy</div>
         <p class="cap-body">Setting direction when the path is unclear. From OLG's FY27 Annual Business Plan to Cascade's program turnaround — translating ambiguity into aligned, executable direction.</p>
         <span class="cap-num">01</span>
       </div>
       <div class="cap-card reveal" style="transition-delay:0.08s">
+        <div class="cap-card-bg"></div>
         <svg class="cap-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
         <div class="cap-title">Insight & Analysis</div>
         <p class="cap-body">Identifying signals before they escalate. Whether a spike in rejection rates or a bottleneck hiding in a Gantt chart — I dig until the root cause surfaces, with data.</p>
         <span class="cap-num">02</span>
       </div>
       <div class="cap-card reveal" style="transition-delay:0.16s">
+        <div class="cap-card-bg"></div>
         <svg class="cap-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
         <div class="cap-title">Problem Solving</div>
         <p class="cap-body">Using data and measurement to diagnose complex systems. Lean Six Sigma Green Belt. PMP certified. Battle-tested across 5 industries in real operational environments.</p>
         <span class="cap-num">03</span>
       </div>
       <div class="cap-card reveal" style="transition-delay:0.08s">
+        <div class="cap-card-bg"></div>
         <svg class="cap-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
         <div class="cap-title">Leadership</div>
         <p class="cap-body">Stabilizing teams during uncertainty. Coached 300+ engineers to zero safety incidents. Developed peers who became entrepreneurs. Led from the front — and from behind when teams needed space.</p>
         <span class="cap-num">04</span>
       </div>
       <div class="cap-card reveal" style="transition-delay:0.16s">
+        <div class="cap-card-bg"></div>
         <svg class="cap-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
         <div class="cap-title">Execution</div>
         <p class="cap-body">Turning strategy into operational reality. Managed 150+ infrastructure projects, designed AutoCAD layouts, built tracking tools from zero. No task too small. No challenge too large.</p>
         <span class="cap-num">05</span>
       </div>
       <div class="cap-card reveal" style="transition-delay:0.24s">
+        <div class="cap-card-bg"></div>
         <svg class="cap-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
         <div class="cap-title">Cross-Industry Navigation</div>
         <p class="cap-body">Maritime → Logistics → Aerospace → Strategy → AI. Each move deliberate. Each one expanding the toolkit. Currently building AI scheduling tools that save manufacturing SMBs $165K/year.</p>
@@ -499,6 +603,7 @@
     </div>
     <div class="work-grid">
       <a href="story.html#cascade" class="work-card reveal">
+        <div class="work-card-reveal"></div>
         <div class="work-card-tag">Aerospace · Consulting</div>
         <div class="work-card-company">Cascade Aerospace</div>
         <p class="work-card-desc">Reduced USAF avionics program turnaround by 40% by diagnosing a hidden contention point invisible in standard reports — contributing to a landmark $270M NATO contract win.</p>
@@ -506,6 +611,7 @@
         <span class="work-card-arrow">↗</span>
       </a>
       <a href="story.html#delhivery" class="work-card reveal" style="transition-delay:0.1s">
+        <div class="work-card-reveal"></div>
         <div class="work-card-tag">Logistics · Operations</div>
         <div class="work-card-company">Delhivery</div>
         <p class="work-card-desc">Led a team of 8 engineers to analyze bottlenecks, design warehouse layouts, and manage 150+ infrastructure projects — realizing $135M in revenue synergies across India.</p>
@@ -513,6 +619,7 @@
         <span class="work-card-arrow">↗</span>
       </a>
       <a href="story.html#olg" class="work-card reveal" style="transition-delay:0.2s">
+        <div class="work-card-reveal"></div>
         <div class="work-card-tag">Strategy · Gaming</div>
         <div class="work-card-company">Ontario Lottery &amp; Gaming</div>
         <p class="work-card-desc">Devised a partnership strategy modeled on India's Lucky Yatra, securing CEO buy-in and driving 8-executive consensus on OLG's FY27 Annual Business Plan.</p>
@@ -548,11 +655,50 @@
   </ul>
 </footer>
 
+<!-- Lenis smooth scroll -->
+<script src="https://unpkg.com/@studio-freight/lenis@1.0.42/dist/lenis.min.js"></script>
 <script>
+  /* ── Lenis smooth scroll ── */
+  const lenis = new Lenis({ lerp: 0.08, smoothWheel: true });
+  function raf(time){ lenis.raf(time); requestAnimationFrame(raf); }
+  requestAnimationFrame(raf);
+
+  /* ── Nav scroll state ── */
   const nav = document.getElementById('nav');
   window.addEventListener('scroll', () => nav.classList.toggle('scrolled', window.scrollY > 60), {passive:true});
-  const io = new IntersectionObserver(entries => entries.forEach(e => { if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)} }), {threshold:0.1,rootMargin:'0px 0px -40px 0px'});
+
+  /* ── Scroll reveal (clip-path wipe) ── */
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(e => { if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } });
+  }, {threshold:0.08, rootMargin:'0px 0px -32px 0px'});
   document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+
+  /* ── Custom cursor ── */
+  const cursor = document.getElementById('cursor');
+  const ring   = document.getElementById('cursor-ring');
+  let mx=window.innerWidth/2, my=window.innerHeight/2;
+  let rx=mx, ry=my;
+
+  document.addEventListener('mousemove', e => {
+    mx = e.clientX; my = e.clientY;
+    cursor.style.left = mx + 'px';
+    cursor.style.top  = my + 'px';
+  }, {passive:true});
+
+  (function animRing(){
+    rx += (mx - rx) * 0.12;
+    ry += (my - ry) * 0.12;
+    ring.style.left = rx + 'px';
+    ring.style.top  = ry + 'px';
+    requestAnimationFrame(animRing);
+  })();
+
+  /* enlarge cursor on interactive elements */
+  const hoverTargets = 'a, button, .principle-card, .cap-card, .work-card, .stop, .cred-item, .marquee-strip';
+  document.querySelectorAll(hoverTargets).forEach(el => {
+    el.addEventListener('mouseenter', () => cursor.classList.add('hovering'));
+    el.addEventListener('mouseleave', () => cursor.classList.remove('hovering'));
+  });
 </script>
 </body>
 </html>
