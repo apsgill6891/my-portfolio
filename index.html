@@ -96,8 +96,14 @@
     .nav-links a{font-size:0.72rem;font-weight:500;letter-spacing:0.12em;text-transform:uppercase;color:rgba(255,255,255,0.7);transition:color 0.3s;display:block;padding:4px 0}
     #nav.scrolled .nav-links a{color:var(--gray-500)}
     .nav-links a:hover,#nav.scrolled .nav-links a:hover{color:var(--gold)}
-    .nav-cta{font-size:0.7rem;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:var(--white);border:1px solid rgba(255,255,255,0.3);padding:9px 22px;transition:all 0.3s}
-    #nav.scrolled .nav-cta{color:var(--navy);border-color:var(--navy-10)}
+    .nav-cta{
+      font-size:0.7rem;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;
+      color:var(--white);border:1px solid rgba(255,255,255,0.25);padding:9px 22px;
+      border-radius:9999px;transition:all 0.3s;
+      backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+      background:rgba(255,255,255,0.06)
+    }
+    #nav.scrolled .nav-cta{color:var(--navy);border-color:var(--navy-10);background:transparent;backdrop-filter:none}
     .nav-cta:hover{background:var(--gold)!important;color:var(--navy)!important;border-color:var(--gold)!important}
 
     /* NAV PILL */
@@ -119,8 +125,15 @@
 
     /* HERO */
     #hero{background:var(--navy);min-height:100vh;display:flex;flex-direction:column;justify-content:center;position:relative;overflow:hidden;padding-top:100px}
-    .hero-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0}
-    .hero-video-overlay{position:absolute;inset:0;background:rgba(0,0,0,0.52);z-index:1}
+    .hero-video{position:absolute;inset:0;z-index:0;overflow:hidden;pointer-events:none}
+    .hero-video iframe{
+      position:absolute;top:50%;left:50%;
+      width:177.78vh;height:56.25vw;
+      min-width:100%;min-height:100%;
+      transform:translate(-50%,-50%);
+      pointer-events:none
+    }
+    .hero-video-overlay{position:absolute;inset:0;background:rgba(4,12,30,0.62);z-index:1}
     .map-grid{position:absolute;inset:0;z-index:2;background-image:linear-gradient(rgba(201,166,75,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(201,166,75,0.04) 1px,transparent 1px);background-size:80px 80px;pointer-events:none}
     .map-grid::after{content:'';position:absolute;inset:0;background-image:repeating-linear-gradient(45deg,rgba(201,166,75,0.02) 0px,rgba(201,166,75,0.02) 1px,transparent 1px,transparent 70px);pointer-events:none}
 
@@ -147,13 +160,29 @@
     .hero-sub{font-size:clamp(1rem,1.5vw,1.12rem);line-height:1.75;color:rgba(255,255,255,0.55);max-width:520px;margin-bottom:44px;opacity:0;animation:fadeUp 0.9s 0.8s var(--ease) forwards}
     .hero-actions{display:flex;gap:16px;flex-wrap:wrap;opacity:0;animation:fadeUp 0.9s 1s var(--ease) forwards}
 
-    .btn-primary{display:inline-flex;align-items:center;gap:8px;background:var(--ocean);color:var(--white);font-size:0.72rem;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;padding:14px 32px;transition:background 0.25s,transform 0.2s}
-    .btn-primary:hover{background:var(--ocean-dark);transform:translateY(-2px)}
-    .btn-ghost{display:inline-flex;align-items:center;gap:8px;color:rgba(255,255,255,0.62);font-size:0.72rem;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;padding:14px 32px;border:1px solid rgba(255,255,255,0.18);transition:all 0.25s}
-    .btn-ghost:hover{color:var(--white);border-color:rgba(255,255,255,0.5);transform:translateY(-2px)}
-    .btn-outline{display:inline-flex;align-items:center;gap:8px;color:var(--navy);font-size:0.72rem;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;padding:12px 28px;border:1px solid var(--navy-10);transition:all 0.25s}
+    /* BUTTONS — unified pill system */
+    .btn-primary,.btn-ghost,.btn-outline,.btn-outline-gold{
+      display:inline-flex;align-items:center;gap:8px;
+      font-size:0.72rem;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;
+      padding:13px 28px;border-radius:9999px;transition:all 0.3s var(--ease);
+      position:relative;overflow:hidden
+    }
+    .btn-primary{background:var(--gold);color:var(--navy);border:1px solid var(--gold)}
+    .btn-primary:hover{background:var(--gold-light);transform:translateY(-2px);box-shadow:0 8px 24px rgba(201,166,75,0.4)}
+    .btn-ghost{
+      background:rgba(255,255,255,0.08);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+      color:rgba(255,255,255,0.9);border:1px solid rgba(255,255,255,0.2)
+    }
+    .btn-ghost::before{
+      content:'';position:absolute;inset:0;border-radius:inherit;padding:1px;
+      background:linear-gradient(180deg,rgba(255,255,255,0.28) 0%,rgba(255,255,255,0) 100%);
+      -webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);
+      -webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none
+    }
+    .btn-ghost:hover{background:rgba(255,255,255,0.16);color:var(--white);transform:translateY(-2px)}
+    .btn-outline{background:transparent;color:var(--navy);border:1px solid rgba(11,31,59,0.18)}
     .btn-outline:hover{background:var(--navy);color:var(--white);transform:translateY(-2px)}
-    .btn-outline-gold{display:inline-flex;align-items:center;gap:8px;color:var(--gold);font-size:0.72rem;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;padding:12px 28px;border:1px solid rgba(201,166,75,0.35);transition:all 0.25s}
+    .btn-outline-gold{background:rgba(201,166,75,0.06);color:var(--gold);border:1px solid rgba(201,166,75,0.32)}
     .btn-outline-gold:hover{background:var(--gold);color:var(--navy);transform:translateY(-2px)}
 
     .hero-compass{position:relative;display:flex;align-items:center;justify-content:center;opacity:0;animation:fadeIn 1.2s 0.8s var(--ease) forwards}
@@ -205,8 +234,9 @@
     #principles{background:var(--white)}
     .principles-header{margin-bottom:64px}
     .principles-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--navy-10);border:1px solid var(--navy-10);margin-bottom:64px}
-    .principle-card{background:var(--white);padding:40px 32px;transition:background 0.3s;position:relative;overflow:hidden;cursor:none}
-    .principle-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--gold);transform:scaleX(0);transform-origin:left;transition:transform 0.4s var(--ease-out)}
+    .principle-card{background:var(--white);padding:40px 32px;transition:background 0.3s,box-shadow 0.3s;position:relative;overflow:hidden;cursor:none;border-radius:2px}
+    .principle-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--gold),var(--ocean));transform:scaleX(0);transform-origin:left;transition:transform 0.4s var(--ease-out)}
+    .principle-card:hover{box-shadow:0 16px 48px rgba(11,31,59,0.08)}
     /* clip-path reveal overlay on hover */
     .principle-card::after{
       content:'';position:absolute;inset:0;
@@ -229,13 +259,18 @@
     #capabilities{background:var(--navy)}
     .cap-header{margin-bottom:64px;display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:24px}
     .cap-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.06)}
-    .cap-card{background:rgba(255,255,255,0.025);padding:40px 32px;position:relative;overflow:hidden;cursor:none}
-    /* top-line shimmer */
-    .cap-card::after{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);transform:scaleX(0);transition:transform 0.5s var(--ease-out)}
-    /* clip-path background reveal */
-    .cap-card-bg{position:absolute;inset:0;background:rgba(255,255,255,0.05);clip-path:inset(100% 0 0 0);transition:clip-path 0.5s var(--ease-out)}
-    .cap-card:hover .cap-card-bg{clip-path:inset(0 0 0 0)}
-    .cap-card:hover::after{transform:scaleX(1)}
+    .cap-card{background:rgba(255,255,255,0.025);padding:40px 32px;position:relative;overflow:hidden;cursor:none;border-radius:2px;transition:background 0.3s}
+    /* gradient border + top shimmer on hover */
+    .cap-card::after{
+      content:'';position:absolute;inset:0;border-radius:inherit;padding:1px;
+      background:linear-gradient(135deg,rgba(201,166,75,0) 0%,rgba(201,166,75,0.5) 50%,rgba(47,128,237,0.3) 100%);
+      -webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);
+      -webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none;
+      opacity:0;transition:opacity 0.4s var(--ease-out)
+    }
+    .cap-card:hover{background:rgba(255,255,255,0.05)}
+    .cap-card:hover::after{opacity:1}
+    .cap-card-bg{display:none}
     .cap-icon{width:40px;height:40px;margin-bottom:24px;color:var(--gold);position:relative;z-index:1}
     .cap-title{font-family:var(--font-head);font-size:1.1rem;font-weight:700;color:var(--white);margin-bottom:12px;letter-spacing:-0.03em;position:relative;z-index:1}
     .cap-body{font-size:0.88rem;line-height:1.75;color:rgba(255,255,255,0.48);position:relative;z-index:1}
@@ -248,8 +283,18 @@
     .work-card{
       background:var(--white);border:1px solid var(--navy-10);padding:36px 32px;
       display:flex;flex-direction:column;position:relative;overflow:hidden;cursor:none;
+      border-radius:2px;
       transition:transform 0.35s var(--ease-out),box-shadow 0.35s var(--ease-out),border-color 0.35s
     }
+    /* gradient border shimmer on hover */
+    .work-card::after{
+      content:'';position:absolute;inset:0;border-radius:inherit;padding:1px;
+      background:linear-gradient(135deg,rgba(47,128,237,0.0),rgba(201,166,75,0.5),rgba(47,128,237,0.0));
+      -webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);
+      -webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none;
+      opacity:0;transition:opacity 0.4s var(--ease-out)
+    }
+    .work-card:hover::after{opacity:1}
     /* clip-path gradient reveal from bottom */
     .work-card-reveal{
       position:absolute;inset:0;
@@ -263,7 +308,7 @@
     .work-card-tag{font-size:0.65rem;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:var(--ocean);margin-bottom:16px;position:relative;z-index:1}
     .work-card-company{font-family:var(--font-head);font-size:1.3rem;font-weight:700;color:var(--navy);margin-bottom:8px;letter-spacing:-0.04em;position:relative;z-index:1}
     .work-card-desc{font-size:0.88rem;line-height:1.75;color:var(--gray-500);flex:1;margin-bottom:24px;position:relative;z-index:1}
-    .work-card-metric{font-family:var(--font-head);font-size:2.2rem;font-weight:700;letter-spacing:-0.05em;color:var(--navy);margin-bottom:4px;position:relative;z-index:1}
+    .work-card-metric{font-family:var(--font-head);font-size:2.8rem;font-weight:700;letter-spacing:-0.06em;color:var(--navy);margin-bottom:4px;position:relative;z-index:1}
     .work-card-metric-label{font-size:0.68rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--gray-500);position:relative;z-index:1}
     .work-card-arrow{position:absolute;bottom:28px;right:28px;font-size:1.2rem;color:rgba(11,31,59,0.2);transition:transform 0.3s var(--ease-out),color 0.3s;z-index:1}
     .work-card:hover .work-card-arrow{transform:translate(4px,-4px);color:var(--ocean)}
@@ -358,20 +403,26 @@
 
 <!-- HERO -->
 <section id="hero">
-  <video class="hero-video" autoplay muted loop playsinline preload="auto">
-    <source src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260317_100335_dc625816-c3c1-4b00-b93e-4cb301cf5ea5.mp4" type="video/mp4">
-  </video>
+  <!-- Ship at sea: YouTube iframe background -->
+  <div class="hero-video" aria-hidden="true">
+    <iframe
+      src="https://www.youtube.com/embed/uGMrDQFCBSI?autoplay=1&mute=1&loop=1&playlist=uGMrDQFCBSI&controls=0&disablekb=1&rel=0&modestbranding=1&playsinline=1&vq=hd1080"
+      allow="autoplay; fullscreen"
+      frameborder="0"
+      tabindex="-1"
+    ></iframe>
+  </div>
   <div class="hero-video-overlay"></div>
   <div class="map-grid"></div>
   <div class="container hero-inner">
     <div class="hero-text">
       <div class="hero-badge liquid-glass">Strategic Navigator · MBA Rotman · Ex-Merchant Navy Officer</div>
       <h1 class="hero-headline">
-        <span class="blur-word" style="animation-delay:0.3s">Navigating</span><br>
-        <span class="blur-word accent" style="animation-delay:0.45s">Complex</span>
-        <span class="blur-word" style="animation-delay:0.55s">Systems</span>
+        <span class="blur-word" style="animation-delay:0.3s">Complexity</span><br>
+        <span class="blur-word" style="animation-delay:0.43s">is my</span><br>
+        <span class="blur-word accent" style="animation-delay:0.56s">Compass.</span>
       </h1>
-      <p class="hero-sub">From ship decks to boardrooms — 12 years building solutions across maritime operations, logistics, aerospace, and strategy consulting.</p>
+      <p class="hero-sub">12 years steering through the world's hardest systems — from $50M maritime crises at sea to $270M boardroom wins on land. I thrive where the map runs out.</p>
       <div class="hero-actions">
         <a href="story.html" class="btn-primary">View My Work →</a>
         <a href="#navigator" class="btn-ghost">Read My Story</a>
