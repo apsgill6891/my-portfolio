@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>The Problem — OI Platform</title>
+  <link rel="stylesheet" href="css/main.css"/>
+</head>
+<body>
+<script src="js/data.js"></script>
+<script src="js/nav.js"></script>
+
+<!-- ── Page Header ────────────────────────────────────── -->
+<div class="page-header">
+  <div class="container">
+    <div class="kicker">Operating Context</div>
+    <h1 class="h-display mb-16">Why this problem matters</h1>
+    <p>A high-mix CNC job shop is one of the hardest environments to schedule. Understanding why requires understanding the operating model — and why it breaks in exactly predictable ways.</p>
+  </div>
+</div>
+
+<!-- ── Operating Model ────────────────────────────────── -->
+<section>
+  <div class="container">
+    <div class="kicker">The Operating Model</div>
+    <h2 class="h-section mb-48">What makes a HMLV shop different</h2>
+
+    <div class="grid-3 gap-24 mb-48">
+      <div class="card accent-border">
+        <div style="font-size:2rem;margin-bottom:16px">🏭</div>
+        <h3 class="h-card mb-12">High-Mix, Low-Volume</h3>
+        <p class="text-sm muted-text">Dozens of different part families, typically 20–200 units per run. No two weeks look the same. Standard scheduling heuristics built for high-volume production fail here.</p>
+      </div>
+      <div class="card warning-border">
+        <div style="font-size:2rem;margin-bottom:16px">👷</div>
+        <h3 class="h-card mb-12">Operator Coverage Model</h3>
+        <p class="text-sm muted-text">Each skilled operator covers 2–3 machines simultaneously. This means one operator's attention is divided — and divided attention creates elastic, unpredictable actual cycle times.</p>
+      </div>
+      <div class="card">
+        <div style="font-size:2rem;margin-bottom:16px">📋</div>
+        <h3 class="h-card mb-12">Static ERP Schedules</h3>
+        <p class="text-sm muted-text">ERP systems record planned times against fixed routings. Reality diverges by day 2. Setups run long. Operators hop. The schedule becomes reference documentation, not operational truth.</p>
+      </div>
+    </div>
+
+    <!-- Problem Map -->
+    <div class="card card-lg" style="background:var(--surface2)">
+      <div class="kicker">Problem Map</div>
+      <h3 class="h-card mb-32">How value leaks through the system</h3>
+
+      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:0;align-items:center;margin-bottom:32px">
+        <div class="entity-node accent" style="text-align:center;padding:20px 12px">
+          <div style="font-size:1.4rem;margin-bottom:8px">🗃️</div>
+          <div>ERP Records</div>
+          <div style="font-size:0.7rem;color:var(--muted);margin-top:4px">Planned world</div>
+        </div>
+        <div style="text-align:center;color:var(--warning);font-size:1.2rem">→</div>
+        <div class="entity-node warning" style="text-align:center;padding:20px 12px">
+          <div style="font-size:1.4rem;margin-bottom:8px">🧠</div>
+          <div>Humans Interpret</div>
+          <div style="font-size:0.7rem;color:var(--muted);margin-top:4px">Reality</div>
+        </div>
+        <div style="text-align:center;color:var(--danger);font-size:1.2rem">→</div>
+        <div class="entity-node" style="border-color:var(--danger);color:var(--danger);text-align:center;padding:20px 12px">
+          <div style="font-size:1.4rem;margin-bottom:8px">🌫️</div>
+          <div>Decisions Stay</div>
+          <div style="font-size:0.7rem;color:var(--muted);margin-top:4px">Implicit</div>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px">
+        <div class="flag-item warning">
+          <div class="flag-icon">⚠️</div>
+          <div><strong>Setup Variability</strong><br><span class="muted-text text-sm">2h planned becomes 3.5h actual when part family changes unexpectedly</span></div>
+        </div>
+        <div class="flag-item danger">
+          <div class="flag-icon">🔴</div>
+          <div><strong>Inventory Leakage</strong><br><span class="muted-text text-sm">Early completion builds WIP. Late completion starves assembly. Both are invisible in ERP.</span></div>
+        </div>
+        <div class="flag-item accent">
+          <div class="flag-icon">💸</div>
+          <div><strong>Overtime Creep</strong><br><span class="muted-text text-sm">Reactive OT authorization to cover schedule gaps that were predictable 3 days earlier</span></div>
+        </div>
+        <div class="flag-item" style="border-left-color:var(--muted)">
+          <div class="flag-icon">🧠</div>
+          <div><strong>Cognitive Load</strong><br><span class="muted-text text-sm">Planner holds 50+ state variables in their head. One absence = one broken week.</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ── Why Static Scheduling Breaks ──────────────────── -->
+<section style="background:var(--surface)">
+  <div class="container">
+    <div class="kicker">Root Cause Analysis</div>
+    <h2 class="h-section mb-48">Why static scheduling breaks in this environment</h2>
+
+    <div class="grid-2 gap-32">
+      <div>
+        <div class="flex-col gap-20">
+          <div class="card">
+            <h3 class="h-card mb-8" style="color:var(--warning)">1. Elastic Cycle Times</h3>
+            <p class="text-sm muted-text mb-12">A CNC mill running unattended has a deterministic cycle time. But the <em>effective</em> cycle time when an operator monitors 3 machines is variable. When machine A needs attention, machines B and C wait.</p>
+            <div style="background:var(--surface2);border-radius:var(--r-sm);padding:12px;font-family:var(--ff-mono);font-size:0.75rem">
+              Effective cycle = nominal cycle × (1 + attention_dilution × (machines_covered - 1))<br>
+              <span style="color:var(--accent)">At 3 machines: +30% average cycle elongation</span>
+            </div>
+          </div>
+
+          <div class="card">
+            <h3 class="h-card mb-8" style="color:var(--danger)">2. Setup Drift</h3>
+            <p class="text-sm muted-text mb-12">Setups for new part families are inherently variable. Fixturing adjustments, first-piece inspection, program edits — all invisible to a static schedule that books 1.5h and moves on.</p>
+            <div class="progress-bar mb-8"><div class="progress-fill warning" style="width:65%"></div></div>
+            <div class="flex justify-between text-xs muted-text">
+              <span>Setup completed on time</span><span>65% of the time</span>
+            </div>
+          </div>
+
+          <div class="card">
+            <h3 class="h-card mb-8" style="color:var(--accent)">3. The Batching Dilemma</h3>
+            <p class="text-sm muted-text">Every setup has a fixed cost. Running more parts amortizes that cost — but builds inventory. The optimal batch size is a function of carrying cost, demand timing, and operator availability. ERP doesn't optimize this.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex-col gap-20">
+        <div class="card">
+          <h3 class="h-card mb-8" style="color:var(--success)">4. The Weekly Meeting as Optimization Engine</h3>
+          <p class="text-sm muted-text mb-16">The Monday planning meeting is where the real scheduling actually happens. An experienced planner mentally models:</p>
+          <div class="flex-col gap-8">
+            <div class="flex gap-12 items-center">
+              <span class="badge badge-accent">Priority</span>
+              <span class="text-sm">Which customers must ship this week, non-negotiable</span>
+            </div>
+            <div class="flex gap-12 items-center">
+              <span class="badge badge-warning">Capacity</span>
+              <span class="text-sm">Who can cover what, given certifications and load</span>
+            </div>
+            <div class="flex gap-12 items-center">
+              <span class="badge badge-muted">Setups</span>
+              <span class="text-sm">Where can we consolidate to save changeover time</span>
+            </div>
+            <div class="flex gap-12 items-center">
+              <span class="badge badge-success">Risk</span>
+              <span class="text-sm">What might go wrong, and what's the fallback</span>
+            </div>
+          </div>
+          <p class="text-sm muted-text mt-16">This intelligence is real. It's just entirely tribal and person-dependent.</p>
+        </div>
+
+        <div class="card warning-border">
+          <h3 class="h-card mb-12">The Hidden Trade-Offs</h3>
+          <div class="flex-col gap-12">
+            <div style="display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center;font-size:0.82rem">
+              <div class="heatmap-cell heatmap-low">Fewer Setups</div>
+              <div style="color:var(--muted);text-align:center">vs</div>
+              <div class="heatmap-cell heatmap-med">More Inventory</div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center;font-size:0.82rem">
+              <div class="heatmap-cell heatmap-low">On-Time Delivery</div>
+              <div style="color:var(--muted);text-align:center">vs</div>
+              <div class="heatmap-cell heatmap-high">Overtime Cost</div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center;font-size:0.82rem">
+              <div class="heatmap-cell heatmap-low">Operator Comfort</div>
+              <div style="color:var(--muted);text-align:center">vs</div>
+              <div class="heatmap-cell heatmap-med">Machine Utilization</div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center;font-size:0.82rem">
+              <div class="heatmap-cell heatmap-low">Strategic Customer</div>
+              <div style="color:var(--muted);text-align:center">vs</div>
+              <div class="heatmap-cell heatmap-med">High-Margin Order</div>
+            </div>
+          </div>
+          <p class="text-sm muted-text mt-16">These trade-offs aren't absent in the current system — they're just invisible and inconsistent.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ── Operator Triangle ───────────────────────────────── -->
+<section>
+  <div class="container">
+    <div class="kicker">The Binding Constraint</div>
+    <h2 class="h-section mb-16">Skilled attention is the real bottleneck</h2>
+    <p class="muted-text mb-48" style="max-width:660px">Machine capacity is abundant in most HMLV shops. The constraint is the skilled operator who knows each machine, each part family, each customer's expectations — and who can only be in one place at a time.</p>
+
+    <div class="grid-3 gap-24 mb-48">
+      <div class="card text-center">
+        <div style="font-size:2.5rem;margin-bottom:12px">🎯</div>
+        <h3 class="h-card mb-8">Attention Dilution</h3>
+        <div class="kpi-value accent-text mb-4">+15%</div>
+        <p class="text-sm muted-text">Cycle elongation per additional machine covered beyond the first</p>
+      </div>
+      <div class="card text-center">
+        <div style="font-size:2.5rem;margin-bottom:12px">⏱️</div>
+        <h3 class="h-card mb-8">Micro-Stop Factor</h3>
+        <div class="kpi-value warning-text mb-4">5–20%</div>
+        <p class="text-sm muted-text">Additional cycle time from operator-caused micro-interruptions and real-time adjustments</p>
+      </div>
+      <div class="card text-center">
+        <div style="font-size:2.5rem;margin-bottom:12px">🧩</div>
+        <h3 class="h-card mb-8">Certification Constraint</h3>
+        <div class="kpi-value success-text mb-4">2–3</div>
+        <p class="text-sm muted-text">Machines the average operator is certified on. Machine assignment is not free — it's bounded by skill and trust.</p>
+      </div>
+    </div>
+
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:32px">
+      <h3 class="h-card mb-24 text-center">Why the right answer is decision support, not automation</h3>
+      <div class="grid-3 gap-24">
+        <div style="text-align:center">
+          <div style="width:56px;height:56px;border-radius:50%;background:rgba(239,68,68,0.1);border:1px solid var(--danger);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:1.4rem">❌</div>
+          <h4 style="margin-bottom:8px;color:var(--danger)">Full Automation</h4>
+          <p class="text-sm muted-text">Ignores the tacit knowledge operators carry. An algorithm that doesn't know Joe prefers VMC1 because it runs tighter tolerances will make systematically wrong assignments.</p>
+        </div>
+        <div style="text-align:center">
+          <div style="width:56px;height:56px;border-radius:50%;background:rgba(245,158,11,0.1);border:1px solid var(--warning);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:1.4rem">⚠️</div>
+          <h4 style="margin-bottom:8px;color:var(--warning)">Pure Manual</h4>
+          <p class="text-sm muted-text">The current state. Effective when the right person is in the room. Fails on vacations, transitions, and when the number of variables exceeds working memory.</p>
+        </div>
+        <div style="text-align:center">
+          <div style="width:56px;height:56px;border-radius:50%;background:rgba(34,197,94,0.1);border:1px solid var(--success);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:1.4rem">✅</div>
+          <h4 style="margin-bottom:8px;color:var(--success)">Decision Support</h4>
+          <p class="text-sm muted-text">Surface the trade-offs. Encode the logic. Let humans decide — but faster, with more information, and with the implications visible before the decision is made.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ── Next Steps ──────────────────────────────────────── -->
+<section style="background:var(--surface);text-align:center">
+  <div class="container">
+    <h2 class="h-section mb-16">See the solution</h2>
+    <p class="muted-text mb-40" style="max-width:500px;margin-left:auto;margin-right:auto">Each module addresses a layer of this problem. Start with the canonical data foundation, or jump straight to the interactive demo.</p>
+    <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap">
+      <a href="module0.html" class="btn btn-outline btn-lg">Module 0 — Data Foundation →</a>
+      <a href="module1.html" class="btn btn-primary btn-lg">Module 1 — Live Demo →</a>
+    </div>
+  </div>
+</section>
+
+</body>
+</html>

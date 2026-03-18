@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Appendix — OI Platform</title>
+  <link rel="stylesheet" href="css/main.css"/>
+</head>
+<body>
+<script src="js/data.js"></script>
+<script src="js/nav.js"></script>
+
+<div class="page-header">
+  <div class="container">
+    <div class="kicker">Technical Reference</div>
+    <h1 class="h-display mb-16">Appendix & Architecture</h1>
+    <p>Full technical documentation: workflow map, data schema, rules registry, simulation assumptions, and glossary. For serious viewers who want to understand the full depth of the system.</p>
+  </div>
+</div>
+
+<!-- ── Workflow Map ────────────────────────────────────── -->
+<section>
+  <div class="container">
+    <div class="kicker">Workflow Architecture</div>
+    <h2 class="h-section mb-32">System workflow map</h2>
+    <div class="card card-lg mb-40">
+      <div style="overflow-x:auto">
+        <div style="min-width:900px">
+          <!-- Workflow visualization -->
+          <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:0;align-items:start;padding:20px 0">
+            <div class="flex-col items-center gap-8">
+              <div class="entity-node accent" style="width:100%;padding:16px;text-align:center">
+                <div style="font-size:1.4rem;margin-bottom:8px">🗃️</div>
+                <div style="font-weight:700">ERP Data</div>
+                <div style="font-size:0.7rem;color:var(--muted);margin-top:4px">Global Shop Systems<br>Raw records</div>
+              </div>
+              <div style="color:var(--border2);font-size:0.75rem;text-align:center">Input layer</div>
+            </div>
+            <div class="flex items-center justify-center" style="font-size:1.5rem;color:var(--accent);padding-top:24px">→</div>
+            <div class="flex-col items-center gap-8">
+              <div class="entity-node success" style="width:100%;padding:16px;text-align:center">
+                <div style="font-size:1.4rem;margin-bottom:8px">🗄️</div>
+                <div style="font-weight:700">Module 0</div>
+                <div style="font-size:0.7rem;color:var(--muted);margin-top:4px">Canonical Truth<br>Layer</div>
+              </div>
+              <div style="color:var(--border2);font-size:0.75rem;text-align:center">Data foundation</div>
+            </div>
+            <div class="flex items-center justify-center" style="font-size:1.5rem;color:var(--accent);padding-top:24px">→</div>
+            <div class="flex-col gap-16">
+              <div class="entity-node" style="border-color:var(--accent2);color:var(--accent2);padding:12px;text-align:center">
+                <div style="font-size:1.1rem;margin-bottom:6px">📊</div>
+                <div style="font-weight:700;font-size:0.85rem">Module 1</div>
+                <div style="font-size:0.65rem;color:var(--muted);margin-top:2px">Weekly Review</div>
+              </div>
+              <div class="entity-node" style="border-color:var(--warning);color:var(--warning);padding:12px;text-align:center">
+                <div style="font-size:1.1rem;margin-bottom:6px">🔍</div>
+                <div style="font-weight:700;font-size:0.85rem">Same/Similar</div>
+                <div style="font-size:0.65rem;color:var(--muted);margin-top:2px">Part Intelligence</div>
+              </div>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:0;align-items:start;padding:0 0 20px;margin-top:16px">
+            <div></div><div></div><div></div><div></div>
+            <div class="flex-col gap-12">
+              <div class="entity-node success" style="padding:12px;text-align:center">
+                <div style="font-size:0.8rem;font-weight:700">Decision Flags</div>
+                <div style="font-size:0.65rem;color:var(--muted)">4 actionable outputs</div>
+              </div>
+              <div class="entity-node success" style="padding:12px;text-align:center">
+                <div style="font-size:0.8rem;font-weight:700">Savings Estimates</div>
+                <div style="font-size:0.65rem;color:var(--muted)">Per-scenario $</div>
+              </div>
+              <div class="entity-node success" style="padding:12px;text-align:center">
+                <div style="font-size:0.8rem;font-weight:700">Match Ranking</div>
+                <div style="font-size:0.65rem;color:var(--muted)">Top-5 similar parts</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Data Schema -->
+    <div class="kicker">Data Schema</div>
+    <h2 class="h-section mb-32">Entity schemas</h2>
+    <div class="tabs">
+      <button class="tab-btn active" onclick="showTab('schema-operator')">Operator</button>
+      <button class="tab-btn" onclick="showTab('schema-machine')">Machine</button>
+      <button class="tab-btn" onclick="showTab('schema-job')">Job</button>
+      <button class="tab-btn" onclick="showTab('schema-params')">Parameters</button>
+      <button class="tab-btn" onclick="showTab('schema-part')">Part (SS)</button>
+    </div>
+
+    <div id="tab-schema-operator" class="tab-panel active">
+      <div class="card" style="background:var(--surface2)">
+        <pre style="font-family:var(--ff-mono);font-size:0.78rem;color:var(--text);overflow:auto;white-space:pre-wrap">{
+  id:                   string,      // "O1" — canonical identifier
+  name:                 string,      // "Joe"
+  skillTier:            string,      // "Expert" | "Advanced" | "Journeyman"
+  certifiedMachines:    string[],    // machines operator is qualified to run
+  preferredMachines:    string[],    // machines operator runs fastest
+  maxMachines:          number,      // hard ceiling on simultaneous coverage
+  otEligible:           boolean,     // can be scheduled for overtime
+  setupProficiency:     string,      // "Fast" | "Average" | "Slow"
+  learningCurveStrength:number,      // 0–1, higher = faster setup improvement on repeat jobs
+  weeklyPlannedHours:   number,      // scheduled hours this week
+  weeklyActualHours:    number,      // actual hours (for actuals tracking)
+  weeklySetupHours:     number,      // hours spent on setups this week
+  avgMachinesCovered:   number,      // rolling average of machines simultaneously covered
+  risk:                 string       // "Overload" | "Watch" | "OK" | "Under"
+}</pre>
+      </div>
+    </div>
+
+    <div id="tab-schema-machine" class="tab-panel">
+      <div class="card" style="background:var(--surface2)">
+        <pre style="font-family:var(--ff-mono);font-size:0.78rem;color:var(--text);overflow:auto;white-space:pre-wrap">{
+  id:              string,   // "VMC1" — canonical identifier
+  type:            string,   // "CNC Mill" | "CNC Lathe" | "Manual Mill" etc
+  ageClass:        string,   // "New" | "Mid" | "Old"
+  cycleBandMin:    number,   // minimum cycle time for typical job (minutes)
+  cycleBandMax:    number,   // maximum cycle time for typical job (minutes)
+  setupHours:      number,   // average setup time (hours)
+  precision:       string,   // "High" | "Medium" | "Low"
+  babysitting:     number,   // 0–1, fraction of cycle requiring operator attention
+  varRisk:         string,   // "Low" | "Medium" | "High" | "Very High"
+  utilization:     number    // current utilization rate (0–1)
+}</pre>
+      </div>
+    </div>
+
+    <div id="tab-schema-job" class="tab-panel">
+      <div class="card" style="background:var(--surface2)">
+        <pre style="font-family:var(--ff-mono);font-size:0.78rem;color:var(--text);overflow:auto;white-space:pre-wrap">{
+  id:                     string,   // "J101"
+  customer:               string,   // "OEMA"
+  marginClass:            string,   // "High" | "Medium" | "Low"
+  qtyRemaining:           number,   // units left to produce
+  dueBucket:              string,   // "This Week" | "Next Week" | "Two+ Weeks"
+  setupRequired:          boolean,  // does this job need a new setup?
+  preferredMachine:       string,   // ideal machine for this job
+  altMachine:             string,   // acceptable fallback machine
+  strategic:              boolean,  // is this customer strategically important?
+  canSplit:               boolean,  // can the run be split across days/weeks?
+  inventoryToleranceDays: number,   // how many days early/late is acceptable?
+  idealBatch:             number,   // optimal run quantity
+  lcSensitivity:          string,   // learning curve: "High" | "Medium" | "Low"
+  expedite:               boolean,  // is this job currently expedited?
+  urgencyScore:           number,   // 0–10 urgency score
+  strategicScore:         number    // 0–10 strategic importance score
+}</pre>
+      </div>
+    </div>
+
+    <div id="tab-schema-params" class="tab-panel">
+      <div class="card" style="background:var(--surface2)">
+        <pre style="font-family:var(--ff-mono);font-size:0.78rem;color:var(--text);overflow:auto;white-space:pre-wrap">{
+  setupCostPerHour:            number,   // $/hour for setup labor — default $85
+  inventoryCarryingPct:        number,   // annual carry cost as % of part value — default 18%
+  maxMachinesPerOperator:      number,   // attention ceiling — default 2.5
+  batchExtensionThresholdPct:  number,   // when to extend batch to avoid 2nd setup — default 30%
+  expeditePenaltyMultiplier:   number,   // cost multiplier for expedited jobs — default 1.4×
+  overtimePenaltyMultiplier:   number,   // labor rate multiplier for OT — default 1.2×
+  machineSubstitutionPenaltyPct: number, // cycle time penalty for using alt machine — default 12%
+  attentionDilutionFactor:     number,   // cycle elongation per extra machine — default 15%
+  microStopFactorMin:          number,   // min micro-stop overhead — default 5%
+  microStopFactorMax:          number,   // max micro-stop overhead — default 20%
+  overtimeRateMultiplier:      number,   // OT pay rate — default 1.5×
+  latenessPenaltyPerDay:       number    // $ per day late — default $200
+}</pre>
+      </div>
+    </div>
+
+    <div id="tab-schema-part" class="tab-panel">
+      <div class="card" style="background:var(--surface2)">
+        <pre style="font-family:var(--ff-mono);font-size:0.78rem;color:var(--text);overflow:auto;white-space:pre-wrap">{
+  partId:             string,      // "P201"
+  partFamily:         string,      // "Bearing Ring" | "Shaft" | "Flange" etc
+  material:           string,      // "4140 Steel" | "17-4 PH" | "304 SS" etc
+  diameterMm:         number,      // outer diameter in mm
+  lengthMm:           number,      // length in mm
+  toleranceClass:     string,      // "Tight" | "Medium" | "Loose"
+  machineFamily:      string,      // "CNC Lathe" | "CNC Mill" | "CNC Mill + Lathe"
+  routingFamily:      string,      // "Turn-Grind-Inspect" | "Face-Mill-Drill-Inspect" etc
+  setupFamily:        string,      // "Ring Soft Jaw" | "Shaft Collet" | "Box Fixture" etc
+  historicalSetupH:   number,      // actual setup hours from prior runs
+  historicalCycleMin: number,      // actual cycle time from prior runs
+  repeatRuns:         number,      // number of times this part has been produced
+  imageFamily:        string,      // "ring_like" | "shaft_like" | "flange_like" etc
+  candidates:         Array&lt;{
+    partId:  string,
+    score:   number,               // 0–1 similarity score
+    reasons: string[]              // attribute-match explanations
+  }&gt;
+}</pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ── Rules Registry ──────────────────────────────────── -->
+<section style="background:var(--surface)">
+  <div class="container">
+    <div class="kicker">Logic Layer</div>
+    <h2 class="h-section mb-32">Rules registry</h2>
+    <div class="grid-2 gap-24">
+      <div>
+        <h3 class="h-card mb-16">Scoring Formulas</h3>
+        <div class="flex-col gap-16">
+          <div class="card" style="background:var(--surface2)">
+            <div class="kpi-label mb-8">Job Risk Score</div>
+            <pre style="font-family:var(--ff-mono);font-size:0.75rem;color:var(--accent);line-height:1.8">score = 0
+if due === "This Week"    → +4
+if due === "Next Week"    → +2
+if expedite === true      → +expeditePenalty
+if setupRequired          → +1.5
+if canSplit === false      → +1.0
+if strategic === true     → -2.0
+if marginClass === "High" → -1.0
+clamp(0, 10)</pre>
+          </div>
+          <div class="card" style="background:var(--surface2)">
+            <div class="kpi-label mb-8">Operator Load Score</div>
+            <pre style="font-family:var(--ff-mono);font-size:0.75rem;color:var(--accent);line-height:1.8">loadRatio = actualHours / plannedHours
+score = (loadRatio - 1) × 5
+      + machinesCovered × 0.4
+      + setupHours / 10
+scaled to 0–10</pre>
+          </div>
+          <div class="card" style="background:var(--surface2)">
+            <div class="kpi-label mb-8">Effective Cycle Time</div>
+            <pre style="font-family:var(--ff-mono);font-size:0.75rem;color:var(--accent);line-height:1.8">effectiveCycle = nominalCycle
+  × (1 + attentionDilution
+       × (machinesCovered - 1))
+  × (1 + microStopFactor)</pre>
+          </div>
+        </div>
+      </div>
+      <div>
+        <h3 class="h-card mb-16">Similarity Formula</h3>
+        <div class="card mb-16" style="background:var(--surface2)">
+          <div class="kpi-label mb-8">Part Similarity Score (0–1)</div>
+          <pre style="font-family:var(--ff-mono);font-size:0.75rem;color:var(--accent);line-height:1.8">score =
+  0.20 × material_match
++ 0.20 × setup_family_match
++ 0.15 × routing_family_match
++ 0.15 × machine_family_match
++ 0.10 × tolerance_similarity
++ 0.10 × geometry_family_match
++ 0.10 × batch_and_history_match</pre>
+        </div>
+        <div class="card" style="background:var(--surface2)">
+          <div class="kpi-label mb-8">Setup Savings Estimate</div>
+          <pre style="font-family:var(--ff-mono);font-size:0.75rem;color:var(--accent);line-height:1.8">estimatedSavings =
+  baseSetupHours
+  × similarityScore
+  × setupReuseFactor (0.6)
+
+cycleConfidence =
+  historicalMatchConfidence
+  × machineCompatibilityFactor</pre>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ── Glossary ────────────────────────────────────────── -->
+<section>
+  <div class="container">
+    <div class="kicker">Glossary</div>
+    <h2 class="h-section mb-32">Key terms</h2>
+    <div class="grid-2 gap-16" id="glossary"></div>
+  </div>
+</section>
+
+<section style="text-align:center;background:var(--surface)">
+  <div class="container">
+    <h2 class="h-section mb-16">You've seen the full system</h2>
+    <p class="muted-text mb-40" style="max-width:480px;margin-left:auto;margin-right:auto">Start the interactive demo or go back to the problem framing to see how this all fits together.</p>
+    <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap">
+      <a href="module1.html" class="btn btn-primary btn-lg">Run Module 1 Demo →</a>
+      <a href="index.html"   class="btn btn-ghost btn-lg">Back to Home</a>
+    </div>
+  </div>
+</section>
+
+<script>
+function showTab(name) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  event.target.classList.add('active');
+}
+
+const glossaryTerms = [
+  { term:'HMLV', def:'High-Mix Low-Volume. Manufacturing environment with many different part types and small batch sizes per run.' },
+  { term:'Canonical Object', def:'An authoritative, complete representation of a business entity with all decision-relevant fields explicitly defined.' },
+  { term:'Setup', def:'The changeover time required to prepare a machine for a new job — programming, fixturing, first-piece inspection.' },
+  { term:'Setup Family', def:'A grouping of setups that share the same fixture type, making consecutive runs of parts in the same family near-zero-setup.' },
+  { term:'Attention Dilution', def:'The cycle time elongation that occurs when an operator covers multiple machines — each machine must "wait" for operator attention at certain steps.' },
+  { term:'Micro-Stop', def:'A brief unplanned interruption in a machine cycle caused by operator intervention — adjustments, chips clearing, dimension checks.' },
+  { term:'Babysitting Factor', def:'The fraction of a machine cycle that requires active operator presence. High-precision old machines have higher babysitting factors.' },
+  { term:'Expedite', def:'A customer-requested or internally-flagged acceleration of a job, typically with a cost and schedule priority premium.' },
+  { term:'WIP', def:'Work-In-Process inventory. Parts that have started production but not yet been completed or shipped.' },
+  { term:'Cycle Band', def:'The min-max range of expected cycle times for a typical job on a given machine, accounting for job size and machine age variability.' },
+  { term:'Learning Curve', def:'The reduction in setup and cycle time that occurs as an operator or machine becomes familiar with a specific part family through repeated runs.' },
+  { term:'Routing Family', def:'A group of operations that typically appear together in sequence — e.g., Turn-Grind-Inspect. Parts in the same routing family share similar machine and skill requirements.' },
+  { term:'Decision Flag', def:'A system-generated recommendation surfaced during weekly review — a specific actionable decision that the planner should consider making.' },
+  { term:'Scenario', def:'A specific optimization bias applied to the weekly planning problem — e.g., Min Setups favors batch consolidation; Max OTD favors priority scheduling.' },
+  { term:'Canonical Completeness', def:'A score (0–100%) representing how complete and well-structured the canonical data objects are for a given shop profile. Higher completeness = more reliable decision support.' },
+  { term:'Same/Similar', def:'The module that finds comparable parts/jobs to infer setup reusability, cycle time expectations, and machine compatibility for a new or recurring job.' }
+];
+
+document.getElementById('glossary').innerHTML = glossaryTerms.map(t => `
+  <div class="card card-sm">
+    <div class="font-mono text-xs" style="color:var(--accent);margin-bottom:4px">${t.term}</div>
+    <div class="text-sm muted-text">${t.def}</div>
+  </div>`
+).join('');
+</script>
+</body>
+</html>

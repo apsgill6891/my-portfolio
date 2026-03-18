@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Module 0 — Canonical Truth Layer</title>
+  <link rel="stylesheet" href="css/main.css"/>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    .calc-section {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--r-lg);
+      overflow: hidden;
+    }
+    .calc-header {
+      padding: 20px 28px;
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .calc-header-label {
+      font-family: var(--ff-mono); font-size: 0.68rem;
+      text-transform: uppercase; letter-spacing: 0.15em;
+      color: var(--accent);
+    }
+    .calc-body { padding: 28px; }
+    .calc-arrow {
+      display: flex; align-items: center; justify-content: center;
+      padding: 12px 0; color: var(--border2); font-size: 1.5rem;
+    }
+    .processing-bar {
+      height: 3px; background: var(--surface3);
+      border-radius: 2px; overflow: hidden; margin: 0;
+    }
+    .processing-fill {
+      height: 100%; width: 0%;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      transition: width 0.6s ease; border-radius: 2px;
+    }
+    .output-highlight {
+      background: rgba(56,189,248,0.06);
+      border: 1px solid rgba(56,189,248,0.15);
+      border-radius: var(--r);
+      padding: 20px;
+    }
+    .rec-item {
+      display: flex; gap: 12px; align-items: flex-start;
+      padding: 14px 16px;
+      background: var(--surface2); border-radius: var(--r-sm);
+      border-left: 3px solid;
+      font-size: 0.85rem; line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+<script src="js/data.js"></script>
+<script src="js/nav.js"></script>
+
+<!-- ── SECTION 1: What is this module ─────────────────── -->
+<div class="page-header">
+  <div class="container">
+    <div class="kicker">Module 00</div>
+    <h1 class="h-display mb-16">Canonical Truth Layer</h1>
+    <p style="font-size:1.05rem;max-width:680px">Converts raw ERP and shop-floor data into clean, structured business objects — operators, machines, jobs, and their constraints. Everything else depends on this layer being complete.</p>
+    <div style="display:flex;gap:24px;flex-wrap:wrap;margin-top:32px">
+      <div><div class="kpi-label mb-4">What it creates</div><div style="font-size:0.9rem">6 canonical entity types with defined relationships</div></div>
+      <div style="width:1px;background:var(--border)"></div>
+      <div><div class="kpi-label mb-4">Why it matters</div><div style="font-size:0.9rem">Without clean canonical data, scoring and scheduling logic produces wrong answers</div></div>
+      <div style="width:1px;background:var(--border)"></div>
+      <div><div class="kpi-label mb-4">Impact</div><div style="font-size:0.9rem;color:var(--success)">Planners spend 40% less time on data reconciliation</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── SECTION 2: Impact created ─────────────────────── -->
+<section style="padding:32px 0">
+  <div class="container">
+    <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr)">
+      <div class="kpi-card accent-border">
+        <div class="kpi-label">Completeness Score</div>
+        <div class="kpi-value" id="kpi-completeness">86<span class="kpi-unit">%</span></div>
+        <div class="kpi-sub">Current shop dataset</div>
+      </div>
+      <div class="kpi-card success-border">
+        <div class="kpi-label">Relationships Mapped</div>
+        <div class="kpi-value">38</div>
+        <div class="kpi-sub">Op→Machine, Job→Machine, constraints</div>
+      </div>
+      <div class="kpi-card warning-border">
+        <div class="kpi-label">Conflicts Detected</div>
+        <div class="kpi-value" id="kpi-conflicts">0</div>
+        <div class="kpi-sub">Coverage vs capacity mismatches</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Data Readiness</div>
+        <div class="kpi-value" id="kpi-readiness" style="color:var(--success)">Ready</div>
+        <div class="kpi-sub">For Module 1 scheduling logic</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ── SECTION 3 + 4: Input → Process → Output ───────── -->
+<section>
+  <div class="container">
+    <div class="kicker mb-8">Live Sandbox</div>
+    <h2 class="h-section mb-32">Configure your shop — see the canonical objects build</h2>
+
+    <div class="grid-2 gap-32">
+
+      <!-- LEFT: INPUTS -->
+      <div>
+        <div class="calc-section">
+          <div class="calc-header">
+            <div>
+              <div class="calc-header-label">Step 1 — Inputs</div>
+              <div style="font-size:0.85rem;font-weight:600;margin-top:2px">Shop Profile Parameters</div>
+            </div>
+            <button onclick="resetDefaults()" class="btn btn-ghost btn-sm">Reset</button>
+          </div>
+          <div class="calc-body">
+            <div class="flex-col gap-20">
+              <div class="slider-group">
+                <div class="slider-label"><span>Operators</span><strong id="v-ops">8</strong></div>
+                <input type="range" id="s-ops" min="2" max="16" value="8" oninput="runCalc()">
+              </div>
+              <div class="slider-group">
+                <div class="slider-label"><span>Machines</span><strong id="v-mach">12</strong></div>
+                <input type="range" id="s-mach" min="4" max="28" value="12" oninput="runCalc()">
+              </div>
+              <div class="slider-group">
+                <div class="slider-label"><span>Max Machines / Operator</span><strong id="v-maxm">2.5</strong></div>
+                <input type="range" id="s-maxm" min="1.0" max="5.0" step="0.5" value="2.5" oninput="runCalc()">
+              </div>
+              <div class="slider-group">
+                <div class="slider-label"><span>Avg Setup Hours</span><strong id="v-sh">1.5h</strong></div>
+                <input type="range" id="s-sh" min="0.5" max="5.0" step="0.5" value="1.5" oninput="runCalc()">
+              </div>
+              <div class="slider-group">
+                <div class="slider-label"><span>Inventory Carrying Cost</span><strong id="v-inv">18%</strong></div>
+                <input type="range" id="s-inv" min="5" max="40" value="18" oninput="runCalc()">
+              </div>
+              <div class="slider-group">
+                <div class="slider-label"><span>Expedite Multiplier</span><strong id="v-exp">1.4×</strong></div>
+                <input type="range" id="s-exp" min="1.0" max="3.0" step="0.1" value="1.4" oninput="runCalc()">
+              </div>
+
+              <div>
+                <div class="kpi-label mb-8">Shop Type</div>
+                <select id="s-type" onchange="runCalc()">
+                  <option value="hmlv">High-Mix Low-Volume (HMLV)</option>
+                  <option value="hv">High-Volume Repetitive</option>
+                  <option value="project">Project / Job Order</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <!-- Processing bar -->
+          <div class="processing-bar"><div class="processing-fill" id="proc-bar"></div></div>
+        </div>
+      </div>
+
+      <!-- RIGHT: OUTPUTS -->
+      <div class="flex-col gap-20">
+
+        <!-- Processing state -->
+        <div id="proc-status" style="display:flex;align-items:center;gap:10px;font-family:var(--ff-mono);font-size:0.72rem;color:var(--accent)">
+          <span id="proc-icon">✓</span>
+          <span id="proc-text">Canonical objects built — ready</span>
+        </div>
+
+        <!-- Completeness -->
+        <div class="output-highlight">
+          <div class="flex justify-between items-center mb-12">
+            <div class="kpi-label">Entity Completeness</div>
+            <div style="font-family:var(--ff-mono);font-size:1.3rem;font-weight:700;color:var(--accent)" id="out-score">86%</div>
+          </div>
+          <div class="flex-col gap-10" id="out-bars"></div>
+        </div>
+
+        <!-- Diagnostics -->
+        <div>
+          <div class="kpi-label mb-10">System Diagnostics</div>
+          <div class="flex-col gap-8" id="out-diag"></div>
+        </div>
+
+        <!-- Coverage chart -->
+        <div class="chart-wrap" style="padding:16px">
+          <div class="chart-title" style="font-size:0.82rem">Capacity Coverage Map</div>
+          <div style="height:160px;position:relative">
+            <canvas id="ch-coverage"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ── SECTION 5: Canonical Entity Viewer ────────────── -->
+<section style="background:var(--surface)">
+  <div class="container">
+    <div class="kicker mb-8">Entity Browser</div>
+    <h2 class="h-section mb-24">Canonical objects — the built output</h2>
+
+    <div class="tabs" id="entity-tabs">
+      <button class="tab-btn active" onclick="showETab(this,'et-operators')">Operators (8)</button>
+      <button class="tab-btn" onclick="showETab(this,'et-machines')">Machines (12)</button>
+      <button class="tab-btn" onclick="showETab(this,'et-jobs')">Jobs (8)</button>
+      <button class="tab-btn" onclick="showETab(this,'et-params')">Parameters</button>
+      <button class="tab-btn" onclick="showETab(this,'et-rels')">Relationships</button>
+    </div>
+
+    <div id="et-operators" class="tab-panel active"><div class="overflow-auto"><table class="data-table" id="tbl-ops"></table></div></div>
+    <div id="et-machines"  class="tab-panel"><div class="overflow-auto"><table class="data-table" id="tbl-mach"></table></div></div>
+    <div id="et-jobs"      class="tab-panel"><div class="overflow-auto"><table class="data-table" id="tbl-jobs"></table></div></div>
+    <div id="et-params"    class="tab-panel"><div id="tbl-params"></div></div>
+    <div id="et-rels"      class="tab-panel"><div id="tbl-rels"></div></div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ── SECTION 6: Recommendations ────────────────────── -->
+<section>
+  <div class="container">
+    <div class="kicker mb-8">Recommendations</div>
+    <h2 class="h-section mb-24">What to do with these canonical objects</h2>
+    <div class="flex-col gap-12" id="out-recs"></div>
+  </div>
+</section>
+
+<!-- Next CTA -->
+<section style="background:var(--surface);text-align:center">
+  <div class="container">
+    <div class="kicker" style="justify-content:center">Next step</div>
+    <h2 class="h-section mb-12">Feed these objects into Module 1</h2>
+    <p class="muted-text mb-32" style="max-width:440px;margin-left:auto;margin-right:auto">Module 1 uses the canonical objects as its foundation — operators, machines, jobs — to run the weekly decision logic.</p>
+    <a href="module1.html" class="btn btn-primary btn-lg">Open Module 1 →</a>
+  </div>
+</section>
+
+<script>
+var coverageChart = null;
+
+function showETab(btn, id) {
+  document.querySelectorAll('.tab-panel').forEach(function(p){ p.classList.remove('active'); });
+  document.querySelectorAll('.tab-btn').forEach(function(b){ b.classList.remove('active'); });
+  document.getElementById(id).classList.add('active');
+  btn.classList.add('active');
+}
+
+function resetDefaults() {
+  document.getElementById('s-ops').value  = 8;
+  document.getElementById('s-mach').value = 12;
+  document.getElementById('s-maxm').value = 2.5;
+  document.getElementById('s-sh').value   = 1.5;
+  document.getElementById('s-inv').value  = 18;
+  document.getElementById('s-exp').value  = 1.4;
+  document.getElementById('s-type').value = 'hmlv';
+  runCalc();
+}
+
+function runCalc() {
+  var ops    = +document.getElementById('s-ops').value;
+  var mach   = +document.getElementById('s-mach').value;
+  var maxm   = +document.getElementById('s-maxm').value;
+  var sh     = +document.getElementById('s-sh').value;
+  var inv    = +document.getElementById('s-inv').value;
+  var exp    = +document.getElementById('s-exp').value;
+  var type   = document.getElementById('s-type').value;
+
+  document.getElementById('v-ops').textContent  = ops;
+  document.getElementById('v-mach').textContent = mach;
+  document.getElementById('v-maxm').textContent = maxm.toFixed(1);
+  document.getElementById('v-sh').textContent   = sh.toFixed(1) + 'h';
+  document.getElementById('v-inv').textContent  = inv + '%';
+  document.getElementById('v-exp').textContent  = exp.toFixed(1) + '×';
+
+  // Animate processing bar
+  var bar = document.getElementById('proc-bar');
+  var status = document.getElementById('proc-status');
+  document.getElementById('proc-icon').textContent = '⟳';
+  document.getElementById('proc-text').textContent = 'Building canonical objects…';
+  bar.style.width = '0%';
+  setTimeout(function(){ bar.style.width = '60%'; }, 60);
+  setTimeout(function(){ bar.style.width = '100%'; }, 300);
+  setTimeout(function(){
+    document.getElementById('proc-icon').textContent = '✓';
+    document.getElementById('proc-text').textContent = 'Canonical objects built — ready';
+  }, 700);
+
+  // Derived metrics
+  var ratio      = mach / ops;
+  var maxCap     = ops * maxm;
+  var uncovered  = Math.max(0, mach - maxCap);
+  var conflicts  = uncovered > 0 ? Math.ceil(uncovered) : (ratio > maxm ? 1 : 0);
+  var completeness = Math.min(100, Math.round(70 + (ops/16)*10 + (10 - Math.abs(ratio - 2)*4)));
+
+  document.getElementById('kpi-completeness').innerHTML = completeness + '<span class="kpi-unit">%</span>';
+  document.getElementById('kpi-conflicts').textContent = conflicts;
+  var readinessEl = document.getElementById('kpi-readiness');
+  if (conflicts > 2) { readinessEl.textContent = 'Issues'; readinessEl.style.color = 'var(--danger)'; }
+  else if (conflicts > 0) { readinessEl.textContent = 'Warnings'; readinessEl.style.color = 'var(--warning)'; }
+  else { readinessEl.textContent = 'Ready'; readinessEl.style.color = 'var(--success)'; }
+
+  document.getElementById('out-score').textContent = completeness + '%';
+
+  // Entity bars
+  var entities = [
+    { name:'Operators',   score: Math.min(100, Math.round(ops/10*100)) },
+    { name:'Machines',    score: Math.min(100, Math.round(mach/18*100)) },
+    { name:'Jobs',        score: 88 },
+    { name:'Routings',    score: Math.min(100, 68 + Math.round(type === 'hmlv' ? 8 : 4)) },
+    { name:'Parameters',  score: 96 },
+    { name:'Constraints', score: Math.min(100, Math.round(65 + ratio*4)) }
+  ];
+  document.getElementById('out-bars').innerHTML = entities.map(function(e) {
+    var color = e.score >= 90 ? 'success' : e.score >= 70 ? '' : 'warning';
+    return '<div><div class="flex justify-between text-xs mb-4"><span class="muted-text">' + e.name + '</span>' +
+      '<span class="font-mono" style="color:var(--accent)">' + e.score + '%</span></div>' +
+      '<div class="progress-bar"><div class="progress-fill ' + color + '" style="width:' + e.score + '%"></div></div></div>';
+  }).join('');
+
+  // Diagnostics
+  var diags = [];
+  if (ratio > maxm)   diags.push({ t:'danger',  i:'🔴', msg:'Coverage gap: ratio ' + ratio.toFixed(1) + ' exceeds max ' + maxm + ' machines/operator' });
+  else                diags.push({ t:'success',  i:'✅', msg:'Coverage feasible: ' + maxCap + ' machine-slots for ' + mach + ' machines' });
+  if (sh > 2.5)       diags.push({ t:'warning',  i:'⚠️', msg:'High avg setup ' + sh + 'h — batch consolidation strongly recommended' });
+  if (inv > 25)       diags.push({ t:'warning',  i:'⚠️', msg:'High carrying cost ' + inv + '% — favors split runs and pull scheduling' });
+  if (exp > 1.8)      diags.push({ t:'danger',   i:'🔴', msg:'Expedite multiplier ' + exp.toFixed(1) + '× — expedited jobs will heavily distort schedule' });
+  diags.push({ t:'accent', i:'ℹ️', msg:'Canonical completeness: <strong>' + completeness + '%</strong> — ' + (completeness >= 85 ? 'data foundation is ready for Module 1' : 'review operator certifications and routing data') });
+
+  document.getElementById('out-diag').innerHTML = diags.map(function(d) {
+    return '<div class="flag-item ' + d.t + '" style="padding:10px 14px"><span>' + d.i + '</span><span>' + d.msg + '</span></div>';
+  }).join('');
+
+  // Coverage radar / bar chart
+  if (coverageChart) coverageChart.destroy();
+  var ctx = document.getElementById('ch-coverage').getContext('2d');
+  var coverageData = entities.map(function(e){ return e.score; });
+  coverageChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: entities.map(function(e){ return e.name; }),
+      datasets: [{ data: coverageData,
+        backgroundColor: coverageData.map(function(v){ return v >= 90 ? 'rgba(34,197,94,0.5)' : v >= 70 ? 'rgba(56,189,248,0.5)' : 'rgba(245,158,11,0.5)'; }),
+        borderRadius: 3 }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend:{ display:false } },
+      scales: {
+        x: { ticks:{ color:'#6B7280', font:{ family:"'IBM Plex Mono'", size:9 } }, grid:{ color:'rgba(255,255,255,0.04)' } },
+        y: { min:0, max:100, ticks:{ color:'#6B7280', font:{ family:"'IBM Plex Mono'", size:9 } }, grid:{ color:'rgba(255,255,255,0.05)' } }
+      }
+    }
+  });
+
+  // Recommendations
+  buildRecs(ops, mach, maxm, sh, inv, exp, type, conflicts, completeness, ratio);
+}
+
+function buildRecs(ops, mach, maxm, sh, inv, exp, type, conflicts, completeness, ratio) {
+  var recs = [];
+  if (conflicts > 0) recs.push({ t:'danger',  i:'🔴', title:'Resolve coverage gap',       body:'Reduce machines assigned per run cycle or increase operator count. ' + Math.ceil(mach - ops*maxm) + ' machines currently exceed operator coverage capacity.' });
+  if (sh > 2.5)      recs.push({ t:'warning', i:'⚠️', title:'Implement setup families',   body:'High average setup hours (' + sh + 'h) make setup family grouping critical. Group fixtures so consecutive runs share the same setup.' });
+  if (completeness < 80) recs.push({ t:'warning', i:'⚠️', title:'Complete routing data', body:'Canonical completeness is below 80%. Review operator certification records and routing families before running Module 1 scheduling.' });
+  if (inv > 25)      recs.push({ t:'accent',  i:'ℹ️', title:'Evaluate pull scheduling',  body:'At ' + inv + '% carrying cost, economic order quantities favor smaller, more frequent runs. Batch extension logic will surface the exact break-even.' });
+  if (completeness >= 85 && conflicts === 0) recs.push({ t:'success', i:'✅', title:'Data foundation ready',   body:'Canonical objects are complete and conflict-free. Proceed to Module 1 to run the weekly review decision logic on this dataset.' });
+  recs.push({ t:'accent', i:'🔗', title:'Proceed to Module 1',       body:'Load these canonical objects into the weekly review engine. Operator loads, job risks, and scenario outputs will all be based on this foundation.' });
+
+  document.getElementById('out-recs').innerHTML = recs.map(function(r) {
+    return '<div class="rec-item ' + r.t + '">' +
+      '<div style="font-size:1.2rem;flex-shrink:0">' + r.i + '</div>' +
+      '<div><strong>' + r.title + '</strong><br><span class="muted-text">' + r.body + '</span></div></div>';
+  }).join('');
+}
+
+// ── Build entity tables ────────────────────────────────
+function buildTables() {
+  // Operators
+  document.getElementById('tbl-ops').innerHTML = '<thead><tr><th>ID</th><th>Name</th><th>Tier</th><th>Certified Machines</th><th>Max Mach</th><th>Planned Hrs</th><th>Actual Hrs</th><th>Setup Hrs</th><th>Risk</th></tr></thead><tbody>' +
+    JEB.operators.map(function(o) {
+      return '<tr><td class="mono">' + o.id + '</td><td><strong>' + o.name + '</strong></td>' +
+        '<td><span class="badge badge-' + (o.skillTier==='Expert'?'accent':o.skillTier==='Advanced'?'success':'muted') + '">' + o.skillTier + '</span></td>' +
+        '<td class="mono" style="font-size:0.72rem">' + o.certifiedMachines.join(', ') + '</td>' +
+        '<td class="mono">' + o.maxMachines + '</td>' +
+        '<td class="mono">' + o.weeklyPlannedHours + 'h</td>' +
+        '<td class="mono" style="color:' + (o.weeklyActualHours > o.weeklyPlannedHours ? 'var(--warning)' : 'var(--success)') + '">' + o.weeklyActualHours + 'h</td>' +
+        '<td class="mono">' + o.weeklySetupHours + 'h</td>' +
+        '<td>' + JEB.riskBadge(o.risk) + '</td></tr>';
+    }).join('') + '</tbody>';
+
+  // Machines
+  document.getElementById('tbl-mach').innerHTML = '<thead><tr><th>ID</th><th>Type</th><th>Age</th><th>Cycle Band</th><th>Setup Hrs</th><th>Precision</th><th>Var Risk</th><th>Utilization</th></tr></thead><tbody>' +
+    JEB.machines.map(function(m) {
+      return '<tr><td class="mono">' + m.id + '</td><td>' + m.type + '</td>' +
+        '<td><span class="badge badge-' + (m.ageClass==='New'?'success':m.ageClass==='Mid'?'accent':'warning') + '">' + m.ageClass + '</span></td>' +
+        '<td class="mono">' + m.cycleBandMin + '–' + m.cycleBandMax + ' min</td>' +
+        '<td class="mono">' + m.setupHours + 'h</td>' +
+        '<td><span class="badge badge-' + (m.precision==='High'?'accent':m.precision==='Medium'?'muted':'warning') + '">' + m.precision + '</span></td>' +
+        '<td>' + JEB.riskBadge(m.varRisk) + '</td>' +
+        '<td><div style="display:flex;align-items:center;gap:6px"><div class="progress-bar" style="width:50px"><div class="progress-fill ' + (m.utilization > 0.8 ? 'warning' : 'success') + '" style="width:' + (m.utilization*100) + '%"></div></div><span class="mono text-xs">' + Math.round(m.utilization*100) + '%</span></div></td></tr>';
+    }).join('') + '</tbody>';
+
+  // Jobs
+  var dueColor = { 'This Week':'danger','Next Week':'warning','Two+ Weeks':'muted' };
+  document.getElementById('tbl-jobs').innerHTML = '<thead><tr><th>ID</th><th>Customer</th><th>Margin</th><th>Due</th><th>Pref. Machine</th><th>Strategic</th><th>Risk Score</th></tr></thead><tbody>' +
+    JEB.jobs.map(function(j) {
+      return '<tr><td class="mono"><strong>' + j.id + '</strong></td><td>' + j.customer + '</td>' +
+        '<td><span class="badge badge-' + (j.marginClass==='High'?'success':j.marginClass==='Medium'?'accent':'muted') + '">' + j.marginClass + '</span></td>' +
+        '<td><span class="badge badge-' + (dueColor[j.dueBucket]||'muted') + '">' + j.dueBucket + '</span></td>' +
+        '<td class="mono">' + j.preferredMachine + '</td>' +
+        '<td>' + (j.strategic ? '<span class="badge badge-accent">Yes</span>' : '<span class="badge badge-muted">No</span>') + '</td>' +
+        '<td><span class="mono" style="font-size:1rem;font-weight:700;color:var(--warning)">' + JEB.jobRiskScore(j) + '</span></td></tr>';
+    }).join('') + '</tbody>';
+
+  // Params
+  var d = JEB.defaults;
+  var plist = [
+    ['setupCostPerHour','Setup Cost / Hour','$'+d.setupCostPerHour],
+    ['inventoryCarryingPct','Inventory Carrying Cost',d.inventoryCarryingPct+'%'],
+    ['maxMachinesPerOperator','Max Machines / Operator',d.maxMachinesPerOperator],
+    ['expeditePenaltyMultiplier','Expedite Penalty',d.expeditePenaltyMultiplier+'×'],
+    ['overtimePenaltyMultiplier','Overtime Rate',d.overtimePenaltyMultiplier+'×'],
+    ['attentionDilutionFactor','Attention Dilution',Math.round(d.attentionDilutionFactor*100)+'%/mach'],
+    ['latenessPenaltyPerDay','Lateness Penalty','$'+d.latenessPenaltyPerDay+'/day']
+  ];
+  document.getElementById('tbl-params').innerHTML = '<div class="grid-3 gap-16">' +
+    plist.map(function(p) {
+      return '<div class="kpi-card accent-border"><div class="kpi-label">' + p[1] + '</div>' +
+        '<div style="font-family:var(--ff-mono);font-size:1.3rem;font-weight:700;color:var(--accent);margin-top:6px">' + p[2] + '</div></div>';
+    }).join('') + '</div>';
+
+  // Relationships
+  var rels = [
+    { from:'Operator', arrow:'can run', to:'Machine', count:38, note:'Bounded by certification. Joe: 7 machines. Lee: 3 machines.' },
+    { from:'Job', arrow:'prefers', to:'Machine', count:8, note:'Preferred + alternate per job.' },
+    { from:'Operator', arrow:'assigned to', to:'Job', count:8, note:'Weekly assignment from planning meeting.' },
+    { from:'Machine', arrow:'has cycle band', to:'Range', count:12, note:'Min/max cycle time for typical job on that machine.' },
+    { from:'Operator', arrow:'has load limit', to:'Hours', count:8, note:'Max machines + max hours before overload flag.' }
+  ];
+  document.getElementById('tbl-rels').innerHTML = '<div class="flex-col gap-10">' +
+    rels.map(function(r) {
+      return '<div class="card" style="display:grid;grid-template-columns:110px 140px 110px 50px 1fr;gap:12px;align-items:center">' +
+        '<div class="entity-node accent">' + r.from + '</div>' +
+        '<div style="text-align:center;font-size:0.72rem;color:var(--muted);font-family:var(--ff-mono)">── ' + r.arrow + ' ──▶</div>' +
+        '<div class="entity-node success">' + r.to + '</div>' +
+        '<div class="badge badge-muted text-center">' + r.count + '</div>' +
+        '<div class="text-sm muted-text">' + r.note + '</div></div>';
+    }).join('') + '</div>';
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  runCalc();
+  buildTables();
+});
+</script>
+</body>
+</html>

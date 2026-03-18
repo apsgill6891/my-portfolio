@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Operations Intelligence Platform</title>
+  <link rel="stylesheet" href="css/main.css"/>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    /* ── Home-only styles ─────────────────────────────────── */
+    .impact-strip {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 2px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      border-radius: var(--r-lg);
+      overflow: hidden;
+    }
+    .impact-cell {
+      background: var(--surface);
+      padding: 28px 24px;
+      display: flex; flex-direction: column; gap: 6px;
+    }
+    .impact-num {
+      font-family: var(--ff-head);
+      font-size: 2.6rem; font-weight: 700;
+      line-height: 1; color: var(--accent);
+    }
+    .impact-label { font-size: 0.82rem; color: var(--muted); line-height: 1.4; }
+    .impact-delta {
+      font-family: var(--ff-mono); font-size: 0.68rem;
+      color: var(--success); margin-top: 2px;
+    }
+
+    /* module selector cards */
+    .module-select {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r-lg);
+      padding: 28px 28px 24px;
+      display: flex; flex-direction: column; gap: 12px;
+      transition: border-color 0.25s, box-shadow 0.25s, transform 0.25s;
+      text-decoration: none; color: inherit; cursor: pointer;
+    }
+    .module-select:hover {
+      border-color: var(--accent);
+      box-shadow: 0 16px 48px rgba(56,189,248,0.1);
+      transform: translateY(-3px);
+    }
+    .module-select-num {
+      font-family: var(--ff-mono); font-size: 0.65rem;
+      text-transform: uppercase; letter-spacing: 0.18em; color: var(--accent); opacity: 0.7;
+    }
+    .module-select-icon {
+      width: 44px; height: 44px; border-radius: 10px;
+      background: rgba(56,189,248,0.1);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.3rem;
+    }
+    .module-select-arrow {
+      margin-top: auto; color: var(--accent);
+      font-size: 0.85rem; font-weight: 600;
+      display: flex; align-items: center; gap: 6px;
+      transition: gap 0.2s;
+    }
+    .module-select:hover .module-select-arrow { gap: 10px; }
+
+    /* chart section */
+    .charts-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 20px;
+    }
+    .chart-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 20px;
+    }
+    .chart-card-title {
+      font-family: var(--ff-head); font-size: 0.85rem; font-weight: 600;
+      margin-bottom: 2px;
+    }
+    .chart-card-sub { font-size: 0.72rem; color: var(--muted); margin-bottom: 14px; }
+
+    @media (max-width: 900px) {
+      .impact-strip { grid-template-columns: repeat(2, 1fr); }
+      .charts-grid  { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 600px) {
+      .impact-strip { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+<script src="js/data.js"></script>
+<script src="js/nav.js"></script>
+
+<!-- ─────────────────────────────────────────────────────── -->
+<!-- HERO                                                     -->
+<!-- ─────────────────────────────────────────────────────── -->
+<section class="hero blueprint-bg">
+  <div class="hero-bg"></div>
+  <div class="container">
+    <div class="hero-content">
+      <div class="hero-eyebrow fade-up">
+        CNC Job Shop · Decision Intelligence · Human-in-the-Loop
+      </div>
+      <h1 class="h-display hero-headline fade-up fade-up-1">
+        Building <em>decision intelligence</em><br>for a human-constrained shop floor
+      </h1>
+      <p class="hero-sub fade-up fade-up-2">
+        I turned a weekly planning meeting into a structured, interactive decision system — surfacing trade-offs, scoring risks, and simulating outcomes for a high-mix CNC manufacturer.
+      </p>
+      <div class="hero-actions fade-up fade-up-3">
+        <a href="module1.html" class="btn btn-primary btn-lg">Run the Live Demo →</a>
+        <a href="problem.html" class="btn btn-outline btn-lg">Why This Problem</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────────────────────────────────────────────── -->
+<!-- IMPACT STRIP                                             -->
+<!-- ─────────────────────────────────────────────────────── -->
+<section style="padding:40px 0 0">
+  <div class="container">
+    <div class="impact-strip">
+      <div class="impact-cell">
+        <div class="impact-num" id="kpi-setups">0%</div>
+        <div class="impact-label">Setup hours reduced<br>per week</div>
+        <div class="impact-delta">↑ via batch consolidation logic</div>
+      </div>
+      <div class="impact-cell">
+        <div class="impact-num" id="kpi-otd">0%</div>
+        <div class="impact-label">On-time delivery<br>probability</div>
+        <div class="impact-delta">↑ from ~78% unstructured baseline</div>
+      </div>
+      <div class="impact-cell">
+        <div class="impact-num" id="kpi-ot">$0</div>
+        <div class="impact-label">Overtime avoided<br>per week</div>
+        <div class="impact-delta">↑ scenario-based OT planning</div>
+      </div>
+      <div class="impact-cell">
+        <div class="impact-num" id="kpi-cycle">0%</div>
+        <div class="impact-label">Planning meeting<br>prep time saved</div>
+        <div class="impact-delta">↑ decisions pre-computed</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────────────────────────────────────────────── -->
+<!-- IMPACT CHARTS                                            -->
+<!-- ─────────────────────────────────────────────────────── -->
+<section style="padding:56px 0 0">
+  <div class="container">
+    <div class="kicker mb-16">Quantified Business Value</div>
+    <div class="charts-grid">
+
+      <!-- Chart 1: Before vs After OTD -->
+      <div class="chart-card">
+        <div class="chart-card-title">On-Time Delivery — Before vs After</div>
+        <div class="chart-card-sub">% probability of on-time shipment by scenario</div>
+        <div style="height:200px;position:relative">
+          <canvas id="ch-otd"></canvas>
+        </div>
+      </div>
+
+      <!-- Chart 2: Weekly savings waterfall -->
+      <div class="chart-card">
+        <div class="chart-card-title">Weekly Savings Potential</div>
+        <div class="chart-card-sub">Dollar impact across decision levers ($)</div>
+        <div style="height:200px;position:relative">
+          <canvas id="ch-savings"></canvas>
+        </div>
+      </div>
+
+      <!-- Chart 3: Setup hours by scenario -->
+      <div class="chart-card">
+        <div class="chart-card-title">Setup Hours by Scenario</div>
+        <div class="chart-card-sub">Weekly setup burden per optimization strategy</div>
+        <div style="height:200px;position:relative">
+          <canvas id="ch-setup"></canvas>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Second row: donut + horizontal bar -->
+    <div class="grid-2 gap-20" style="margin-top:20px">
+      <div class="chart-card">
+        <div class="chart-card-title">Decision Type Coverage</div>
+        <div class="chart-card-sub">Which decision categories this system supports</div>
+        <div style="height:220px;position:relative;display:flex;align-items:center;justify-content:center">
+          <canvas id="ch-decisions" style="max-height:220px"></canvas>
+        </div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-card-title">Operator Load — Planned vs Actual</div>
+        <div class="chart-card-sub">Hours this week — amber = over capacity</div>
+        <div style="height:220px;position:relative">
+          <canvas id="ch-ops"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────────────────────────────────────────────── -->
+<!-- CHOOSE YOUR DEMO                                         -->
+<!-- ─────────────────────────────────────────────────────── -->
+<section>
+  <div class="container">
+    <div class="kicker mb-8">Interactive Demos</div>
+    <h2 class="h-section mb-8">Select a module to explore</h2>
+    <p class="muted-text mb-32" style="font-size:0.95rem">Each module is a live sandbox. Change inputs, see outputs update, follow the recommendations.</p>
+
+    <div class="grid-3 gap-20">
+      <a href="module0.html" class="module-select">
+        <div class="module-select-num">Module 00</div>
+        <div class="module-select-icon">🗄️</div>
+        <div>
+          <div style="font-family:var(--ff-head);font-size:1.2rem;font-weight:700;margin-bottom:6px">Canonical Truth Layer</div>
+          <div class="text-sm muted-text">Define your shop profile — operators, machines, constraints. See the data foundation update and flag conflicts.</div>
+        </div>
+        <div class="module-select-arrow">Open sandbox →</div>
+      </a>
+
+      <a href="module1.html" class="module-select" style="border-color:rgba(56,189,248,0.25)">
+        <div class="module-select-num">Module 01 · Most Interactive</div>
+        <div class="module-select-icon">📊</div>
+        <div>
+          <div style="font-family:var(--ff-head);font-size:1.2rem;font-weight:700;margin-bottom:6px">Weekly Review Control Room</div>
+          <div class="text-sm muted-text">Adjust cost assumptions, pick a scenario, and watch KPIs, charts, and decision flags update in real time.</div>
+        </div>
+        <div class="module-select-arrow">Run demo →</div>
+      </a>
+
+      <a href="same-similar.html" class="module-select">
+        <div class="module-select-num">Module SS</div>
+        <div class="module-select-icon">🔍</div>
+        <div>
+          <div style="font-family:var(--ff-head);font-size:1.2rem;font-weight:700;margin-bottom:6px">Same / Similar Part Intelligence</div>
+          <div class="text-sm muted-text">Select part attributes or upload an image. Get ranked similar jobs, setup savings, and confidence scores.</div>
+        </div>
+        <div class="module-select-arrow">Find similar →</div>
+      </a>
+    </div>
+
+    <!-- Context strip -->
+    <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:24px;padding:20px;background:var(--surface);border-radius:var(--r);border:1px solid var(--border)">
+      <div style="flex:1;min-width:200px">
+        <div class="kpi-label mb-4">The core insight</div>
+        <div class="text-sm" style="color:var(--text)">Skilled attention — not machine capacity — is the binding constraint. Operators cover 2–3 machines. Cycle times are elastic. Static ERP breaks daily.</div>
+      </div>
+      <div style="width:1px;background:var(--border);flex-shrink:0"></div>
+      <div style="flex:1;min-width:200px">
+        <div class="kpi-label mb-4">The solution</div>
+        <div class="text-sm" style="color:var(--text)">Not automation — decision support. Surface trade-offs, encode human logic, let the planner decide faster with full visibility.</div>
+      </div>
+      <div style="width:1px;background:var(--border);flex-shrink:0"></div>
+      <div style="flex:1;min-width:160px;display:flex;flex-direction:column;justify-content:center;gap:8px">
+        <a href="problem.html" class="btn btn-ghost btn-sm" style="justify-content:center">Read the problem →</a>
+        <a href="impact.html"  class="btn btn-ghost btn-sm" style="justify-content:center">See the impact →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+// ── Animated KPI counters ──────────────────────────────
+function animateValue(id, from, to, suffix, prefix, duration, decimals) {
+  var el = document.getElementById(id);
+  var start = null;
+  function step(ts) {
+    if (!start) start = ts;
+    var progress = Math.min((ts - start) / duration, 1);
+    var ease = 1 - Math.pow(1 - progress, 3);
+    var val = from + (to - from) * ease;
+    el.textContent = (prefix || '') + val.toFixed(decimals || 0) + (suffix || '');
+    if (progress < 1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
+
+setTimeout(function() {
+  animateValue('kpi-setups', 0, 30, '%', '', 1400);
+  animateValue('kpi-otd',    0, 94, '%', '', 1600);
+  animateValue('kpi-ot',     0, 1.5, 'k/wk', '$', 1400, 1);
+  animateValue('kpi-cycle',  0, 70, '%', '', 1200);
+}, 300);
+
+// ── Chart defaults ─────────────────────────────────────
+var CD = {
+  responsive: true, maintainAspectRatio: false,
+  plugins: { legend: { labels: { color:'#9CA3AF', font:{ family:"'IBM Plex Mono'", size:10 }, boxWidth:10 } } },
+  scales: {
+    x: { ticks:{ color:'#6B7280', font:{ family:"'IBM Plex Mono'", size:10 } }, grid:{ color:'rgba(255,255,255,0.04)' } },
+    y: { ticks:{ color:'#6B7280', font:{ family:"'IBM Plex Mono'", size:10 } }, grid:{ color:'rgba(255,255,255,0.05)' } }
+  }
+};
+
+// ── Ch1: OTD before vs after ───────────────────────────
+new Chart(document.getElementById('ch-otd').getContext('2d'), {
+  type: 'bar',
+  data: {
+    labels: ['Baseline\n(unstructured)', 'Operator\nFriendly', 'Min\nSetups', 'Max\nOn-Time'],
+    datasets: [{
+      data: [78, 93, 91, 98],
+      backgroundColor: ['rgba(239,68,68,0.5)','rgba(56,189,248,0.6)','rgba(96,165,250,0.6)','rgba(34,197,94,0.6)'],
+      borderRadius: 4,
+      borderSkipped: false
+    }]
+  },
+  options: { ...CD, plugins: { ...CD.plugins, legend: { display:false } },
+    scales: { ...CD.scales, y: { ...CD.scales.y, min:60, max:100 } } }
+});
+
+// ── Ch2: Savings waterfall ────────────────────────────
+new Chart(document.getElementById('ch-savings').getContext('2d'), {
+  type: 'bar',
+  data: {
+    labels: ['Setup\nSavings', 'OT\nAvoidance', 'Inv\nReduction', 'Late\nPenalty', 'Net\nBenefit'],
+    datasets: [{
+      data: [1190, 525, 320, 400, 2435],
+      backgroundColor: ['rgba(34,197,94,0.6)','rgba(34,197,94,0.6)','rgba(34,197,94,0.6)','rgba(34,197,94,0.6)','rgba(56,189,248,0.7)'],
+      borderRadius: 4, borderSkipped: false
+    }]
+  },
+  options: { ...CD, plugins: { ...CD.plugins, legend:{ display:false },
+    tooltip:{ callbacks:{ label: function(c){ return '$' + c.raw.toLocaleString(); } } } } }
+});
+
+// ── Ch3: Setup hours by scenario ─────────────────────
+new Chart(document.getElementById('ch-setup').getContext('2d'), {
+  type: 'bar',
+  data: {
+    labels: ['Unstructured', 'Balanced', 'Min Setups', 'Max OTD', 'Min Inv'],
+    datasets: [{
+      label: 'Setup Hours/Week',
+      data: [36, 30, 22, 36, 44],
+      backgroundColor: ['rgba(239,68,68,0.5)','rgba(56,189,248,0.6)','rgba(34,197,94,0.6)','rgba(245,158,11,0.5)','rgba(96,165,250,0.5)'],
+      borderRadius: 4, borderSkipped: false
+    }]
+  },
+  options: { ...CD, plugins: { ...CD.plugins, legend:{ display:false } } }
+});
+
+// ── Ch4: Decision donut ───────────────────────────────
+new Chart(document.getElementById('ch-decisions').getContext('2d'), {
+  type: 'doughnut',
+  data: {
+    labels: ['Setup Ops','Labor Balance','Machine Assign','OT Planning','Risk Detect','Part Reuse'],
+    datasets: [{
+      data: [22,18,15,18,12,15],
+      backgroundColor: ['#38BDF8','#22C55E','#60A5FA','#F59E0B','#EF4444','#818CF8'],
+      borderColor: '#111827', borderWidth: 2
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: {
+      legend: { position:'right', labels:{ color:'#9CA3AF', font:{ family:"'IBM Plex Mono'", size:9 }, boxWidth:10 } }
+    },
+    cutout: '60%'
+  }
+});
+
+// ── Ch5: Operator load ────────────────────────────────
+var ops = JEB.operators;
+new Chart(document.getElementById('ch-ops').getContext('2d'), {
+  type: 'bar',
+  data: {
+    labels: ops.map(function(o){ return o.name; }),
+    datasets: [
+      { label:'Planned', data: ops.map(function(o){ return o.weeklyPlannedHours; }), backgroundColor:'rgba(56,189,248,0.35)', borderColor:'#38BDF8', borderWidth:1 },
+      { label:'Actual',  data: ops.map(function(o){ return o.weeklyActualHours; }),  backgroundColor: ops.map(function(o){ return o.weeklyActualHours > o.weeklyPlannedHours ? 'rgba(245,158,11,0.6)' : 'rgba(34,197,94,0.45)'; }), borderColor: ops.map(function(o){ return o.weeklyActualHours > o.weeklyPlannedHours ? '#F59E0B' : '#22C55E'; }), borderWidth:1 }
+    ]
+  },
+  options: { ...CD }
+});
+</script>
+</body>
+</html>

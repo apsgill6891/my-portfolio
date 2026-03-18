@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Module 1 — Weekly Review Decision Support</title>
+  <link rel="stylesheet" href="css/main.css"/>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    .calc-panel {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--r-lg);
+      overflow: hidden;
+    }
+    .calc-panel-header {
+      padding: 16px 24px;
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .calc-panel-label {
+      font-family: var(--ff-mono); font-size: 0.65rem;
+      text-transform: uppercase; letter-spacing: 0.15em; color: var(--accent);
+    }
+    .calc-panel-body { padding: 24px; }
+    .processing-strip {
+      height: 3px; background: var(--surface3);
+      border-radius: 0; overflow: hidden;
+    }
+    .processing-fill {
+      height: 100%; width: 0%;
+      background: linear-gradient(90deg, var(--accent), var(--success));
+      transition: width 0.5s ease;
+    }
+    .output-box {
+      background: rgba(56,189,248,0.05);
+      border: 1px solid rgba(56,189,248,0.12);
+      border-radius: var(--r);
+      padding: 20px;
+    }
+    .rec-row {
+      display: flex; gap: 14px; align-items: flex-start;
+      padding: 14px 18px;
+      background: var(--surface2); border-radius: var(--r-sm);
+      border-left: 3px solid; font-size: 0.85rem; line-height: 1.5;
+    }
+    .scenario-card {
+      padding: 14px 18px; border-radius: var(--r-sm);
+      border: 1px solid var(--border); background: var(--surface2);
+      cursor: pointer; transition: all 0.2s; text-align: center;
+    }
+    .scenario-card:hover { border-color: var(--accent); }
+    .scenario-card.active { border-color: var(--accent); background: rgba(56,189,248,0.1); }
+    .scenario-card .sc-val { font-family: var(--ff-head); font-size: 1.4rem; font-weight: 700; }
+    .scenario-card .sc-label { font-family: var(--ff-mono); font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-top: 4px; }
+  </style>
+</head>
+<body>
+<script src="js/data.js"></script>
+<script src="js/nav.js"></script>
+
+<!-- ── WHAT IS THIS MODULE ────────────────────────────── -->
+<div class="page-header">
+  <div class="container">
+    <div class="kicker">Module 01 · Live Demo</div>
+    <h1 class="h-display mb-16">Weekly Review Decision Support</h1>
+    <p style="max-width:680px">The weekly planning meeting, rebuilt as a structured decision system. Change cost assumptions, select a scenario, and watch every output — KPIs, charts, flags, tables — update in real time like a calculation engine.</p>
+    <div style="display:flex;gap:24px;flex-wrap:wrap;margin-top:28px">
+      <div><div class="kpi-label mb-4">What it answers</div><div class="text-sm">What must ship · Who is overloaded · Where to save setups · What trade-offs matter this week</div></div>
+      <div style="width:1px;background:var(--border)"></div>
+      <div><div class="kpi-label mb-4">My contribution</div><div class="text-sm">Designed the scoring logic, scenario biases, decision flag framework, and all output charts</div></div>
+      <div style="width:1px;background:var(--border)"></div>
+      <div><div class="kpi-label mb-4">Impact</div><div class="text-sm" style="color:var(--success)">94% on-time delivery vs ~78% unstructured · $1.5k+/wk OT avoidance</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── STEP 1: INPUTS ─────────────────────────────────── -->
+<section>
+  <div class="container">
+    <div class="kicker mb-8">Step 1 — Set Assumptions</div>
+    <h2 class="h-section mb-24">Adjust cost parameters for your shop</h2>
+
+    <div class="grid-2 gap-28">
+      <div class="calc-panel">
+        <div class="calc-panel-header">
+          <div>
+            <div class="calc-panel-label">Cost Assumptions</div>
+            <div style="font-size:0.85rem;font-weight:600;margin-top:2px">Change any parameter — outputs update instantly</div>
+          </div>
+          <button onclick="resetAll()" class="btn btn-ghost btn-sm">Reset</button>
+        </div>
+        <div class="calc-panel-body">
+          <div class="flex-col gap-18">
+            <div class="slider-group">
+              <div class="slider-label"><span>Setup Cost / Hour ($)</span><strong id="v-sc">$85</strong></div>
+              <input type="range" id="s-sc" min="40" max="200" value="85" oninput="recalc()">
+            </div>
+            <div class="slider-group">
+              <div class="slider-label"><span>Inventory Carrying Rate</span><strong id="v-ic">18%/yr</strong></div>
+              <input type="range" id="s-ic" min="5" max="40" value="18" oninput="recalc()">
+            </div>
+            <div class="slider-group">
+              <div class="slider-label"><span>Overtime Penalty</span><strong id="v-ot">1.2×</strong></div>
+              <input type="range" id="s-ot" min="1.0" max="2.5" step="0.1" value="1.2" oninput="recalc()">
+            </div>
+            <div class="slider-group">
+              <div class="slider-label"><span>Expedite Penalty</span><strong id="v-ep">1.4×</strong></div>
+              <input type="range" id="s-ep" min="1.0" max="3.0" step="0.1" value="1.4" oninput="recalc()">
+            </div>
+            <div class="slider-group">
+              <div class="slider-label"><span>Max Machines / Operator</span><strong id="v-mm">2.5</strong></div>
+              <input type="range" id="s-mm" min="1.0" max="5.0" step="0.5" value="2.5" oninput="recalc()">
+            </div>
+            <div class="slider-group">
+              <div class="slider-label"><span>Lateness Penalty / Day ($)</span><strong id="v-lp">$200</strong></div>
+              <input type="range" id="s-lp" min="50" max="1000" step="50" value="200" oninput="recalc()">
+            </div>
+          </div>
+        </div>
+        <div class="processing-strip"><div class="processing-fill" id="proc1"></div></div>
+      </div>
+
+      <!-- Scenario selector -->
+      <div class="flex-col gap-20">
+        <div>
+          <div class="kicker mb-12">Step 2 — Pick a Scenario</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px" id="sc-grid">
+            <div class="scenario-card active" data-sc="balanced" onclick="setSc(this)">
+              <div class="sc-val" style="color:var(--accent)">93%</div>
+              <div class="sc-label">Operator-Friendly</div>
+            </div>
+            <div class="scenario-card" data-sc="minSetups" onclick="setSc(this)">
+              <div class="sc-val" style="color:var(--success)">22h</div>
+              <div class="sc-label">Min Setups</div>
+            </div>
+            <div class="scenario-card" data-sc="maxOTD" onclick="setSc(this)">
+              <div class="sc-val" style="color:var(--warning)">98%</div>
+              <div class="sc-label">Max On-Time</div>
+            </div>
+            <div class="scenario-card" data-sc="minInventory" onclick="setSc(this)">
+              <div class="sc-val" style="color:var(--accent2)">0.4d</div>
+              <div class="sc-label">Min Inventory</div>
+            </div>
+          </div>
+          <div id="sc-desc" class="text-sm muted-text mt-12" style="padding:12px;background:var(--surface2);border-radius:var(--r-sm);border-left:3px solid var(--accent)"></div>
+        </div>
+
+        <!-- Process status -->
+        <div style="padding:14px 18px;background:var(--surface2);border-radius:var(--r-sm);border:1px solid var(--border)">
+          <div class="flex gap-10 items-center">
+            <div id="proc-icon" style="font-size:1.2rem;flex-shrink:0">✓</div>
+            <div>
+              <div style="font-family:var(--ff-mono);font-size:0.68rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--accent)" id="proc-status">Analysis ready</div>
+              <div id="proc-detail" class="text-xs muted-text mt-4">Scoring all 8 jobs · 8 operators · 4 scenario paths</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ── STEP 3: OUTPUTS — KPIs ─────────────────────────── -->
+<section style="background:var(--surface)">
+  <div class="container">
+    <div class="kicker mb-8">Step 3 — Outputs</div>
+    <h2 class="h-section mb-24">Calculated results for active scenario</h2>
+
+    <div class="kpi-grid mb-24" id="kpi-row" style="grid-template-columns:repeat(5,1fr)"></div>
+
+    <div class="grid-2 gap-24 mb-24">
+      <div class="chart-wrap">
+        <div class="chart-title">Planned vs Actual Hours by Operator</div>
+        <div class="chart-sub">Amber = over capacity — immediate overload risk</div>
+        <div style="height:240px;position:relative"><canvas id="ch-ophours"></canvas></div>
+      </div>
+      <div class="chart-wrap">
+        <div class="chart-title">Jobs at Risk — Urgency vs Strategic Value</div>
+        <div class="chart-sub">Top-right = must ship this week · Size = quantity remaining</div>
+        <div style="height:240px;position:relative"><canvas id="ch-scatter"></canvas></div>
+      </div>
+    </div>
+
+    <div class="grid-2 gap-24 mb-24">
+      <div class="chart-wrap">
+        <div class="chart-title">Scenario Comparison — On-Time / Setup / Overtime</div>
+        <div class="chart-sub">Higher bars = better. Active scenario highlighted.</div>
+        <div style="height:240px;position:relative"><canvas id="ch-scenarios"></canvas></div>
+      </div>
+      <div class="chart-wrap">
+        <div class="chart-title">Savings Waterfall — Active Scenario vs Baseline</div>
+        <div class="chart-sub">Dollar value of each optimization lever this week</div>
+        <div style="height:240px;position:relative"><canvas id="ch-waterfall"></canvas></div>
+      </div>
+    </div>
+
+    <!-- Assignment table -->
+    <div class="mb-24">
+      <div class="kpi-label mb-12">Next Week Operator Assignments</div>
+      <div class="overflow-auto">
+        <table class="data-table" id="tbl-assign"></table>
+      </div>
+    </div>
+
+    <!-- Jobs risk table -->
+    <div>
+      <div class="kpi-label mb-12">Job Risk Scoring — All Jobs</div>
+      <div class="overflow-auto">
+        <table class="data-table" id="tbl-jobs"></table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ── STEP 4: DECISION FLAGS + RECOMMENDATIONS ───────── -->
+<section>
+  <div class="container">
+    <div class="kicker mb-8">Step 4 — Recommendations</div>
+    <h2 class="h-section mb-24">Decision flags and actions</h2>
+
+    <div class="grid-2 gap-28">
+      <div>
+        <div class="output-box mb-16">
+          <div class="flex justify-between items-center mb-14">
+            <div class="kpi-label">Active Decision Flags</div>
+            <span class="badge badge-warning badge-dot" id="flags-count">4 active</span>
+          </div>
+          <div class="flex-col gap-8" id="flags-list"></div>
+        </div>
+      </div>
+      <div class="flex-col gap-10" id="recs-list"></div>
+    </div>
+  </div>
+</section>
+
+<!-- Next CTA -->
+<section style="background:var(--surface);text-align:center">
+  <div class="container">
+    <h2 class="h-section mb-12">Now try part intelligence</h2>
+    <p class="muted-text mb-32" style="max-width:440px;margin-left:auto;margin-right:auto">Same/Similar finds comparable prior jobs to reuse setups, predict cycle times, and speed quoting.</p>
+    <a href="same-similar.html" class="btn btn-primary btn-lg">Open Same/Similar →</a>
+  </div>
+</section>
+
+<script>
+var charts = {};
+var activeSc = 'balanced';
+
+function getP() {
+  return {
+    sc:  +document.getElementById('s-sc').value,
+    ic:  +document.getElementById('s-ic').value / 100,
+    ot:  +document.getElementById('s-ot').value,
+    ep:  +document.getElementById('s-ep').value,
+    mm:  +document.getElementById('s-mm').value,
+    lp:  +document.getElementById('s-lp').value
+  };
+}
+
+function resetAll() {
+  document.getElementById('s-sc').value = 85;
+  document.getElementById('s-ic').value = 18;
+  document.getElementById('s-ot').value = 1.2;
+  document.getElementById('s-ep').value = 1.4;
+  document.getElementById('s-mm').value = 2.5;
+  document.getElementById('s-lp').value = 200;
+  recalc();
+}
+
+function setSc(el) {
+  document.querySelectorAll('.scenario-card').forEach(function(c){ c.classList.remove('active'); });
+  el.classList.add('active');
+  activeSc = el.dataset.sc;
+  recalc();
+}
+
+function animProc() {
+  var bar = document.getElementById('proc1');
+  var icon = document.getElementById('proc-icon');
+  var status = document.getElementById('proc-status');
+  icon.textContent = '⟳';
+  status.textContent = 'Running scenario analysis…';
+  bar.style.width = '0%';
+  setTimeout(function(){ bar.style.width = '70%'; }, 50);
+  setTimeout(function(){ bar.style.width = '100%'; }, 350);
+  setTimeout(function(){ icon.textContent = '✓'; status.textContent = 'Analysis complete'; }, 650);
+}
+
+function recalc() {
+  var p = getP();
+  // Update labels
+  document.getElementById('v-sc').textContent = '$' + p.sc;
+  document.getElementById('v-ic').textContent = Math.round(p.ic*100) + '%/yr';
+  document.getElementById('v-ot').textContent = p.ot.toFixed(1) + '×';
+  document.getElementById('v-ep').textContent = p.ep.toFixed(1) + '×';
+  document.getElementById('v-mm').textContent = p.mm.toFixed(1);
+  document.getElementById('v-lp').textContent = '$' + p.lp;
+  animProc();
+
+  var sc = JEB.scenarios[activeSc];
+  document.getElementById('sc-desc').textContent = sc.description;
+
+  // KPI calcs
+  var setupSav = Math.round((36 - sc.setupHours) * p.sc);
+  var otCost   = Math.round(sc.overtimeHours * 35 * p.ot);
+  var invCost  = Math.round(sc.inventoryDays * 800 * p.ic);
+  var netSav   = setupSav - otCost + sc.savingsVsBase;
+
+  // KPI row
+  document.getElementById('kpi-row').innerHTML = [
+    { label:'On-Time Probability', val: sc.onTimePct + '%', color: sc.onTimePct>=95?'success':sc.onTimePct>=90?'warning':'danger', sub: 'Scenario: ' + sc.label },
+    { label:'Setup Hours',  val: sc.setupHours + 'h',  color: sc.setupHours<=28?'success':'accent', sub: (setupSav>=0?'+':'') + '$' + setupSav.toLocaleString() + ' vs baseline' },
+    { label:'Overtime',     val: sc.overtimeHours + 'h', color: sc.overtimeHours<=8?'success':'warning', sub: '$' + otCost.toLocaleString() + ' labor cost' },
+    { label:'Inventory Δ', val: (sc.inventoryDays>0?'+':'') + sc.inventoryDays + 'd', color: sc.inventoryDays<=1.5?'success':'accent', sub: 'WIP vs zero-inventory ideal' },
+    { label:'Net Saving',   val: '$' + Math.abs(netSav).toLocaleString(), color: netSav>=0?'success':'danger', sub: netSav>=0 ? 'vs unstructured baseline' : 'above baseline cost' }
+  ].map(function(k) {
+    return '<div class="kpi-card ' + k.color + '-border"><div class="kpi-label">' + k.label + '</div>' +
+      '<div class="kpi-value" style="color:var(--' + k.color + ')">' + k.val + '</div>' +
+      '<div class="kpi-sub">' + k.sub + '</div></div>';
+  }).join('');
+
+  renderCharts(p, sc, setupSav, otCost);
+  renderAssignments(p);
+  renderJobsTable(p);
+  renderFlags(p, sc);
+  renderRecs(p, sc, setupSav, netSav);
+}
+
+// ── Charts ─────────────────────────────────────────────
+var CO = {
+  responsive: true, maintainAspectRatio: false,
+  plugins: { legend: { labels:{ color:'#9CA3AF', font:{ family:"'IBM Plex Mono'", size:10 }, boxWidth:10 } } },
+  scales: {
+    x: { ticks:{ color:'#6B7280', font:{ family:"'IBM Plex Mono'", size:10 } }, grid:{ color:'rgba(255,255,255,0.04)' } },
+    y: { ticks:{ color:'#6B7280', font:{ family:"'IBM Plex Mono'", size:10 } }, grid:{ color:'rgba(255,255,255,0.05)' } }
+  }
+};
+function mk(id, config) {
+  if (charts[id]) charts[id].destroy();
+  charts[id] = new Chart(document.getElementById(id).getContext('2d'), config);
+}
+
+function renderCharts(p, sc, setupSav, otCost) {
+  var ops = JEB.operators;
+
+  // Operator hours
+  mk('ch-ophours', { type:'bar', data:{
+    labels: ops.map(function(o){ return o.name; }),
+    datasets: [
+      { label:'Planned', data: ops.map(function(o){ return o.weeklyPlannedHours; }), backgroundColor:'rgba(56,189,248,0.35)', borderColor:'#38BDF8', borderWidth:1 },
+      { label:'Actual',  data: ops.map(function(o){ return o.weeklyActualHours; }),
+        backgroundColor: ops.map(function(o){ return o.weeklyActualHours > o.weeklyPlannedHours ? 'rgba(245,158,11,0.65)' : 'rgba(34,197,94,0.5)'; }),
+        borderColor: ops.map(function(o){ return o.weeklyActualHours > o.weeklyPlannedHours ? '#F59E0B' : '#22C55E'; }), borderWidth:1 }
+    ]}, options: { ...CO, responsive:true, maintainAspectRatio:false }
+  });
+
+  // Scatter
+  mk('ch-scatter', { type:'scatter', data:{
+    datasets: [
+      { label:'This Week', data: JEB.jobs.filter(function(j){ return j.dueBucket==='This Week'; }).map(function(j){ return {x:j.urgencyScore,y:j.strategicScore,r:Math.sqrt(j.qtyRemaining)*1.5,label:j.id}; }), backgroundColor:'rgba(239,68,68,0.65)', pointRadius:9, pointHoverRadius:12 },
+      { label:'Next Week', data: JEB.jobs.filter(function(j){ return j.dueBucket==='Next Week'; }).map(function(j){ return {x:j.urgencyScore,y:j.strategicScore,label:j.id}; }), backgroundColor:'rgba(245,158,11,0.6)', pointRadius:8 },
+      { label:'Two+ Weeks',data: JEB.jobs.filter(function(j){ return j.dueBucket==='Two+ Weeks'; }).map(function(j){ return {x:j.urgencyScore,y:j.strategicScore,label:j.id}; }), backgroundColor:'rgba(56,189,248,0.4)', pointRadius:7 }
+    ]}, options: { responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{ labels:{ color:'#9CA3AF', font:{ family:"'IBM Plex Mono'", size:10 }, boxWidth:10 } },
+        tooltip:{ callbacks:{ label:function(c){ return c.dataset.label + ': ' + c.raw.label; } } } },
+      scales:{ x:{ ...CO.scales.x, min:0, max:10, title:{ display:true, text:'Urgency', color:'#6B7280', font:{ family:"'IBM Plex Mono'", size:10 } } },
+               y:{ ...CO.scales.y, min:0, max:10, title:{ display:true, text:'Strategic', color:'#6B7280', font:{ family:"'IBM Plex Mono'", size:10 } } } }
+    }
+  });
+
+  // Scenario comparison
+  var scs = Object.values(JEB.scenarios);
+  var colors = ['rgba(56,189,248,0.6)','rgba(34,197,94,0.6)','rgba(245,158,11,0.55)','rgba(96,165,250,0.55)'];
+  mk('ch-scenarios', { type:'bar', data:{
+    labels: ['On-Time %','Setup Saved','OT Avoided'],
+    datasets: scs.map(function(s,i){
+      return { label:s.label, data:[s.onTimePct, 50-s.setupHours, 25-s.overtimeHours],
+        backgroundColor: activeSc === Object.keys(JEB.scenarios)[i] ? colors[i].replace('0.6','0.85').replace('0.55','0.8') : colors[i],
+        borderRadius:3 };
+    })}, options: { ...CO, responsive:true, maintainAspectRatio:false }
+  });
+
+  // Waterfall
+  var wfSav   = Math.max(0, setupSav);
+  var wfOT    = Math.max(0, (15 - sc.overtimeHours) * 35);
+  var wfInv   = Math.max(0, Math.round((2 - sc.inventoryDays) * 800 * p.ic));
+  var wfLate  = sc.onTimePct > 95 ? Math.round(p.lp * 1.5) : 0;
+  var wfNet   = wfSav + wfOT + wfInv + wfLate;
+  mk('ch-waterfall', { type:'bar', data:{
+    labels: ['Setup\nSavings','OT\nAvoidance','Inv\nReduction','Late\nPenalty','Net\nBenefit'],
+    datasets:[{ data:[wfSav, wfOT, wfInv, wfLate, wfNet],
+      backgroundColor:['rgba(34,197,94,0.6)','rgba(34,197,94,0.6)','rgba(34,197,94,0.6)','rgba(34,197,94,0.6)','rgba(56,189,248,0.7)'],
+      borderRadius:4, borderSkipped:false }]},
+    options:{ responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{ display:false }, tooltip:{ callbacks:{ label:function(c){ return '$' + c.raw.toLocaleString(); } } } },
+      scales:{ x: CO.scales.x, y: CO.scales.y }
+    }
+  });
+}
+
+function renderAssignments(p) {
+  var rows = JEB.weeklyAssignments;
+  document.getElementById('tbl-assign').innerHTML = '<thead><tr><th>Operator</th><th>Primary</th><th>Secondary</th><th>Tertiary</th><th>Machine Count</th><th>Load Risk</th><th>Feasible?</th></tr></thead><tbody>' +
+    rows.map(function(r) {
+      var cnt = [r.primary,r.secondary,r.tertiary].filter(Boolean).length;
+      var ok  = cnt <= p.mm;
+      return '<tr><td><strong>' + r.operator + '</strong></td><td class="mono">' + r.primary +
+        '</td><td class="mono">' + (r.secondary||'—') + '</td><td class="mono">' + (r.tertiary||'—') +
+        '</td><td class="mono text-center">' + cnt + '</td><td>' + JEB.riskBadge(r.loadRisk) +
+        '</td><td>' + (ok ? '<span class="badge badge-success">✓ OK</span>' : '<span class="badge badge-danger">✗ Exceeds ' + p.mm + '</span>') + '</td></tr>';
+    }).join('') + '</tbody>';
+}
+
+function renderJobsTable(p) {
+  var jobs = JEB.jobs.slice().sort(function(a,b){ return +JEB.jobRiskScore(b,{expeditePenaltyMultiplier:p.ep}) - +JEB.jobRiskScore(a,{expeditePenaltyMultiplier:p.ep}); });
+  var dueC = { 'This Week':'danger','Next Week':'warning','Two+ Weeks':'muted' };
+  document.getElementById('tbl-jobs').innerHTML = '<thead><tr><th>Job</th><th>Customer</th><th>Due</th><th>Margin</th><th>Expedite</th><th>Risk Score</th><th>Action</th></tr></thead><tbody>' +
+    jobs.map(function(j) {
+      var score = +JEB.jobRiskScore(j,{expeditePenaltyMultiplier:p.ep});
+      var action = score > 7 ? 'Prioritize now' : score > 5 ? 'Monitor closely' : 'Schedule next week';
+      var ac = score > 7 ? 'danger' : score > 5 ? 'warning' : 'success';
+      return '<tr><td class="mono"><strong>' + j.id + '</strong></td><td>' + j.customer +
+        '</td><td><span class="badge badge-' + (dueC[j.dueBucket]||'muted') + '">' + j.dueBucket + '</span>' +
+        '</td><td><span class="badge badge-' + (j.marginClass==='High'?'success':j.marginClass==='Medium'?'accent':'muted') + '">' + j.marginClass + '</span>' +
+        '</td><td>' + (j.expedite ? '<span class="badge badge-danger badge-dot">Yes</span>' : '—') +
+        '</td><td><span style="font-family:var(--ff-mono);font-size:1.05rem;font-weight:700;color:var(--' + ac + ')">' + score + '</span>' +
+        '</td><td><span class="badge badge-' + ac + '">' + action + '</span></td></tr>';
+    }).join('') + '</tbody>';
+}
+
+function renderFlags(p, sc) {
+  var flags = JEB.decisionFlags.slice();
+  if (p.mm < 2.5) flags.push({ type:'danger',  text:'Max machines ' + p.mm + '/op — Maya\'s 3-machine coverage is now infeasible. Reassign immediately.', action:'Reassign Maya' });
+  if (p.ot > 1.5) flags.push({ type:'warning', text:'OT penalty ' + p.ot.toFixed(1) + '× — overtime scheduling significantly less economical this week.', action:'Review OT plan' });
+  document.getElementById('flags-count').textContent = flags.length + ' active';
+  document.getElementById('flags-list').innerHTML = flags.map(function(f) {
+    var ic = f.type==='danger'?'🔴':f.type==='warning'?'⚠️':f.type==='success'?'✅':'ℹ️';
+    return '<div class="flag-item ' + f.type + '" style="padding:10px 14px">' +
+      '<span>' + ic + '</span><span style="flex:1">' + f.text + '</span>' +
+      '<span class="badge badge-' + f.type + '" style="flex-shrink:0">' + f.action + '</span></div>';
+  }).join('');
+}
+
+function renderRecs(p, sc, setupSav, netSav) {
+  var recs = [];
+  if (sc.overtimeHours > 15) recs.push({ t:'danger', i:'🔴', h:'Overtime is high this scenario', b:'Consider switching to Operator-Friendly or Min Setups to reduce OT by ' + (sc.overtimeHours - 6) + 'h.' });
+  if (setupSav > 500) recs.push({ t:'success', i:'✅', h:'Strong setup savings available', b:'$' + setupSav.toLocaleString() + ' in setup savings by consolidating runs. Extend J103 and J108 batches as first action.' });
+  if (sc.onTimePct < 92) recs.push({ t:'warning', i:'⚠️', h:'On-time risk below threshold', b:'Probability ' + sc.onTimePct + '% is below 92% target. Prioritize J102 (OEMB, expedite) and J104 (OEMA, strategic).' });
+  if (p.mm < 2.5 || JEB.weeklyAssignments.some(function(a){ return [a.primary,a.secondary,a.tertiary].filter(Boolean).length > p.mm; }))
+    recs.push({ t:'danger', i:'🔴', h:'Assignment feasibility violation', b:'One or more operators exceed max machine coverage limit of ' + p.mm + '. Revise assignments before Monday.' });
+  recs.push({ t:'accent', i:'📋', h:'Monday meeting agenda ready', b:'This system has pre-answered: what must ship, who is overloaded, and which setups to consolidate. Use the flags above to structure the meeting.' });
+
+  document.getElementById('recs-list').innerHTML = recs.map(function(r) {
+    return '<div class="rec-row ' + r.t + '"><div style="font-size:1.1rem;flex-shrink:0">' + r.i + '</div><div><strong>' + r.h + '</strong><br><span class="muted-text">' + r.b + '</span></div></div>';
+  }).join('');
+}
+
+document.addEventListener('DOMContentLoaded', recalc);
+</script>
+</body>
+</html>

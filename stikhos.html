@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>STIKHOS — The Ascending Grid</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* ── Themes ── */
+    :root[data-theme="dark"] {
+      --bg: #09090b;
+      --dot: rgba(255,255,255,0.025);
+      --surf: #18181b;
+      --surf2: #27272a;
+      --surf3: #3f3f46;
+      --border: #3f3f46;
+      --border-s: #27272a;
+      --text: #fafafa;
+      --muted: #a1a1aa;
+      --faint: #52525b;
+
+      --num: #60a5fa;
+      --num-bg: rgba(96,165,250,0.08);
+      --num-br: rgba(96,165,250,0.3);
+      --let: #fbbf24;
+      --let-bg: rgba(251,191,36,0.08);
+      --let-br: rgba(251,191,36,0.3);
+
+      --given-bg: #1e1b4b;
+      --given-c: #a78bfa;
+      --given-br: rgba(167,139,250,0.4);
+
+      --green: #4ade80;
+      --green-bg: rgba(74,222,128,0.1);
+      --red: #f87171;
+      --red-bg: rgba(248,113,113,0.1);
+      --purple: #c084fc;
+      --purple-bg: rgba(192,132,252,0.12);
+      --amber: #fbbf24;
+      --amber-bg: rgba(251,191,36,0.1);
+
+      --accent: #a78bfa;
+      --grad: linear-gradient(135deg,#a78bfa 0%,#60a5fa 55%,#34d399 100%);
+      --grad-btn: linear-gradient(135deg,#7c3aed,#2563eb);
+      --sh-sm: 0 1px 4px rgba(0,0,0,0.5);
+      --sh-md: 0 4px 20px rgba(0,0,0,0.45);
+      --sh-lg: 0 8px 40px rgba(0,0,0,0.55);
+    }
+
+    :root[data-theme="light"] {
+      --bg: #f8fafc;
+      --dot: rgba(0,0,0,0.04);
+      --surf: #ffffff;
+      --surf2: #f1f5f9;
+      --surf3: #e2e8f0;
+      --border: #e2e8f0;
+      --border-s: #f1f5f9;
+      --text: #0f172a;
+      --muted: #64748b;
+      --faint: #cbd5e1;
+
+      --num: #2563eb;
+      --num-bg: rgba(37,99,235,0.07);
+      --num-br: rgba(37,99,235,0.3);
+      --let: #b45309;
+      --let-bg: rgba(180,83,9,0.07);
+      --let-br: rgba(180,83,9,0.3);
+
+      --given-bg: #ede9fe;
+      --given-c: #6d28d9;
+      --given-br: rgba(109,40,217,0.3);
+
+      --green: #15803d;
+      --green-bg: rgba(21,128,61,0.08);
+      --red: #dc2626;
+      --red-bg: rgba(220,38,38,0.08);
+      --purple: #7c3aed;
+      --purple-bg: rgba(124,58,237,0.1);
+      --amber: #b45309;
+      --amber-bg: rgba(180,83,9,0.1);
+
+      --accent: #6d28d9;
+      --grad: linear-gradient(135deg,#6d28d9 0%,#1d4ed8 55%,#047857 100%);
+      --grad-btn: linear-gradient(135deg,#6d28d9,#1d4ed8);
+      --sh-sm: 0 1px 4px rgba(0,0,0,0.07);
+      --sh-md: 0 4px 20px rgba(0,0,0,0.08);
+      --sh-lg: 0 8px 40px rgba(0,0,0,0.1);
+    }
+
+    /* ── Reset ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      background-image: radial-gradient(var(--dot) 1px, transparent 1px);
+      background-size: 22px 22px;
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding-bottom: 64px;
+      transition: background-color 0.3s, color 0.3s;
+    }
+
+    /* ── Header ── */
+    header {
+      width: min(500px, 100vw);
+      padding: 32px 20px 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+
+    .logo { font-family: 'Outfit', sans-serif; font-weight: 900; font-size: clamp(2.2rem,6vw,3rem); letter-spacing: 0.16em; line-height: 1; background: var(--grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .tagline { font-size: 0.62rem; color: var(--muted); letter-spacing: 0.2em; text-transform: uppercase; margin-top: 4px; }
+
+    .header-right { display: flex; gap: 8px; align-items: center; padding-top: 4px; }
+
+    .icon-btn { width: 40px; height: 40px; border-radius: 12px; border: 1px solid var(--border); background: var(--surf); color: var(--muted); font-size: 1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; box-shadow: var(--sh-sm); }
+    .icon-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* ── Pill selectors ── */
+    .pill-row { display: flex; gap: 6px; margin-top: 20px; }
+
+    .pill-group { display: flex; background: var(--surf); border: 1px solid var(--border); border-radius: 14px; padding: 5px; gap: 4px; box-shadow: var(--sh-sm); }
+
+    .pill { padding: 8px 18px; border: none; border-radius: 10px; font-family: 'Inter', sans-serif; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; transition: all 0.2s; background: transparent; color: var(--muted); }
+    .pill:hover { color: var(--text); background: var(--surf2); }
+    .pill.active { background: var(--grad-btn); color: #fff; box-shadow: var(--sh-sm); }
+
+    /* Difficulty pills */
+    .diff-pills { display: flex; gap: 6px; margin-top: 12px; }
+    .dpill { padding: 7px 16px; border-radius: 20px; border: 1.5px solid var(--border); background: transparent; font-family: 'Inter', sans-serif; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; color: var(--muted); transition: all 0.2s; }
+    .dpill:hover { color: var(--text); border-color: var(--faint); }
+    .dpill.active[data-d="easy"]   { border-color: #22c55e; color: #22c55e; background: rgba(34,197,94,0.08); }
+    .dpill.active[data-d="medium"] { border-color: #f59e0b; color: #f59e0b; background: rgba(245,158,11,0.08); }
+    .dpill.active[data-d="hard"]   { border-color: #ef4444; color: #ef4444; background: rgba(239,68,68,0.08); }
+    .dpill.active[data-d="ultra"]  { border-color: #a855f7; color: #a855f7; background: rgba(168,85,247,0.08); }
+
+    /* ── Game card ── */
+    .card {
+      margin-top: 18px;
+      width: min(480px, calc(100vw - 20px));
+      background: var(--surf);
+      border: 1px solid var(--border);
+      border-radius: 28px;
+      padding: 20px;
+      box-shadow: var(--sh-lg);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+      transition: background 0.3s, border-color 0.3s;
+    }
+
+    /* ── Status ── */
+    .status { width: 100%; padding: 10px 16px; border-radius: 12px; font-size: 0.76rem; font-weight: 500; text-align: center; line-height: 1.5; transition: all 0.25s; }
+    .status.idle    { background: var(--surf2); color: var(--muted); }
+    .status.info    { background: var(--surf2); color: var(--text); }
+    .status.correct { background: var(--green-bg); border: 1px solid var(--green); color: var(--green); }
+    .status.error   { background: var(--red-bg);   border: 1px solid var(--red);   color: var(--red); }
+    .status.forced  { background: var(--purple-bg);border: 1px solid var(--purple);color: var(--purple); }
+    .status.nudge   { background: var(--amber-bg); border: 1px solid var(--amber); color: var(--amber); }
+    .status.win     { background: var(--green-bg); border: 1px solid var(--green); color: var(--green); font-weight: 700; font-size: 0.84rem; }
+
+    /* ── Grid ── */
+    .grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; width: 100%; }
+
+    .cell {
+      aspect-ratio: 1;
+      border-radius: 16px;
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Outfit', sans-serif;
+      font-size: clamp(1.15rem, 4vw, 1.55rem);
+      font-weight: 800;
+      cursor: pointer;
+      border: 2px solid var(--border);
+      background: var(--surf2);
+      color: var(--faint);
+      transition: all 0.15s;
+      user-select: none;
+      position: relative;
+    }
+
+    .cell:not(.given):not(.filled):hover { border-color: var(--muted); color: var(--muted); transform: scale(1.03); }
+    .cell:not(.given):not(.filled):active { transform: scale(0.97); }
+
+    .cell.given        { background: var(--given-bg); border-color: var(--given-br); color: var(--given-c); cursor: default; }
+    .cell.given.num-t  { background: var(--num-bg); border-color: var(--num-br); color: var(--num); }
+    .cell.given.let-t  { background: var(--let-bg); border-color: var(--let-br); color: var(--let); }
+
+    .cell.selected {
+      border-color: var(--accent) !important;
+      background: rgba(167,139,250,0.07) !important;
+      box-shadow: 0 0 0 3px rgba(167,139,250,0.18), var(--sh-sm);
+      transform: scale(1.04);
+    }
+    [data-theme="light"] .cell.selected { background: rgba(109,40,217,0.05) !important; box-shadow: 0 0 0 3px rgba(109,40,217,0.14), var(--sh-sm); }
+
+    .cell.ok-num  { background: var(--num-bg); border-color: var(--num-br); color: var(--num); }
+    .cell.ok-let  { background: var(--let-bg); border-color: var(--let-br); color: var(--let); }
+    .cell.ok-cls  { background: var(--green-bg); border-color: var(--green); color: var(--green); }
+    .cell.wrong   { background: var(--red-bg); border-color: var(--red); color: var(--red); animation: shake 0.3s ease; }
+    .cell.nudge-t { border-color: var(--amber) !important; box-shadow: 0 0 0 3px var(--amber-bg), 0 0 14px var(--amber-bg); animation: amber-pulse 1.2s ease infinite; }
+
+    @keyframes shake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-6px)} 60%{transform:translateX(5px)} }
+    @keyframes amber-pulse { 0%,100%{box-shadow:0 0 0 3px var(--amber-bg)} 50%{box-shadow:0 0 0 7px transparent} }
+
+    /* ── Legend ── */
+    .legend { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; }
+    .li { display: flex; align-items: center; gap: 5px; font-size: 0.62rem; color: var(--muted); letter-spacing: 0.04em; }
+    .ld { width: 8px; height: 8px; border-radius: 50%; }
+
+    /* ── Numpad ── */
+    .npad-wrap { width: 100%; display: flex; flex-direction: column; gap: 7px; }
+
+    .npad-label { font-size: 0.6rem; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; padding: 0 2px; }
+
+    .npad-row { display: flex; gap: 5px; }
+    .npad-row .nb { flex: 1; }
+
+    .nb {
+      height: 44px;
+      border-radius: 10px;
+      border: 1.5px solid var(--border);
+      background: var(--surf2);
+      color: var(--faint);
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .nb:not(.off):hover { border-color: var(--muted); color: var(--text); transform: scale(1.06); }
+    .nb:not(.off):active { transform: scale(0.94); }
+    .nb.vn  { border-color: var(--num-br); color: var(--num); background: var(--num-bg); }
+    .nb.vl  { border-color: var(--let-br); color: var(--let); background: var(--let-bg); }
+    .nb.vc  { border-color: rgba(74,222,128,0.4); color: var(--green); background: var(--green-bg); }
+    .nb.frc { border-color: var(--purple); color: var(--purple); background: var(--purple-bg); box-shadow: 0 0 0 2px var(--purple-bg); }
+    .nb.off { opacity: 0.18; cursor: not-allowed; }
+
+    .divider { display: flex; align-items: center; gap: 10px; font-size: 0.58rem; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: var(--faint); }
+    .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--border-s); }
+
+    /* ── Actions ── */
+    .actions { display: flex; gap: 8px; width: 100%; }
+    .act {
+      flex: 1; padding: 11px 0;
+      border-radius: 12px; border: 1.5px solid var(--border);
+      background: var(--surf2); color: var(--muted);
+      font-family: 'Inter', sans-serif; font-size: 0.7rem; font-weight: 700;
+      letter-spacing: 0.09em; text-transform: uppercase; cursor: pointer;
+      transition: all 0.18s;
+    }
+    .act:hover { color: var(--text); border-color: var(--faint); background: var(--surf); }
+    .act.erase:hover { border-color: var(--red); color: var(--red); background: var(--red-bg); }
+    .act.nudge-a:hover { border-color: var(--amber); color: var(--amber); background: var(--amber-bg); }
+    .act.newg { border-color: var(--accent); color: var(--accent); }
+    .act.newg:hover { background: rgba(167,139,250,0.07); }
+
+    /* ── Stats strip ── */
+    .stats { display: flex; width: 100%; border: 1px solid var(--border); border-radius: 14px; overflow: hidden; background: var(--surf2); }
+    .sv { flex: 1; padding: 10px 0; display: flex; flex-direction: column; align-items: center; gap: 2px; border-right: 1px solid var(--border); }
+    .sv:last-child { border-right: none; }
+    .sv-n { font-family: 'Outfit', sans-serif; font-size: 1.1rem; font-weight: 700; }
+    .sv-l { font-size: 0.58rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--faint); }
+
+    /* ── Win overlay ── */
+    .win-ov { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.72); backdrop-filter: blur(10px); z-index: 200; align-items: center; justify-content: center; padding: 20px; }
+    .win-ov.show { display: flex; }
+
+    .win-card {
+      background: var(--surf); border: 1px solid var(--border); border-radius: 28px;
+      padding: 36px 30px; max-width: 360px; width: 100%;
+      display: flex; flex-direction: column; gap: 18px; text-align: center;
+      box-shadow: var(--sh-lg);
+      animation: pop 0.38s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    @keyframes pop { from{transform:scale(0.82);opacity:0} to{transform:scale(1);opacity:1} }
+
+    .we { font-size: 3.2rem; line-height: 1; }
+    .wt { font-family: 'Outfit', sans-serif; font-size: 2rem; font-weight: 900; letter-spacing: 0.1em; background: var(--grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .ws { font-size: 0.8rem; color: var(--muted); line-height: 1.65; }
+    .wss { display: flex; justify-content: space-around; padding: 14px 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+    .sc { background: var(--surf2); border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; font-family: monospace; font-size: 0.72rem; color: var(--muted); line-height: 1.75; text-align: left; white-space: pre; }
+    .wa { display: flex; gap: 10px; }
+    .wb { flex: 1; padding: 12px; border-radius: 12px; border: none; cursor: pointer; font-family: 'Inter', sans-serif; font-size: 0.8rem; font-weight: 700; letter-spacing: 0.06em; transition: all 0.18s; }
+    .wb.pri { background: var(--grad-btn); color: #fff; }
+    .wb.pri:hover { opacity: 0.88; }
+    .wb.sec { background: var(--surf2); color: var(--text); border: 1.5px solid var(--border); }
+    .wb.sec:hover { border-color: var(--muted); }
+
+    /* ── Howto ── */
+    .howto-wrap { width: min(480px, calc(100vw - 20px)); margin-top: 12px; }
+    .ht-tog { width: 100%; background: var(--surf); border: 1px solid var(--border); border-radius: 14px; padding: 13px 18px; font-family: 'Inter', sans-serif; font-size: 0.75rem; font-weight: 700; color: var(--muted); cursor: pointer; text-align: left; display: flex; justify-content: space-between; align-items: center; letter-spacing: 0.06em; transition: all 0.2s; }
+    .ht-tog:hover { color: var(--text); border-color: var(--faint); }
+    .ht-body { display: none; padding: 14px 18px 18px; font-size: 0.74rem; color: var(--muted); line-height: 1.95; background: var(--surf); border: 1px solid var(--border); border-top: none; border-radius: 0 0 14px 14px; }
+    .ht-body.open { display: block; }
+    .ht-body b { color: var(--text); }
+    .hn { color: var(--num); font-weight: 700; }
+    .hl { color: var(--let); font-weight: 700; }
+    .hp { color: var(--purple); font-weight: 700; }
+    .ha { color: var(--amber); font-weight: 700; }
+
+    footer { margin-top: 44px; font-size: 0.6rem; color: var(--faint); letter-spacing: 0.16em; text-transform: uppercase; }
+  </style>
+</head>
+<body>
+
+<!-- ── Header ── -->
+<header>
+  <div>
+    <div class="logo">STIKHOS</div>
+    <div class="tagline">The Ascending Grid Puzzle</div>
+  </div>
+  <div class="header-right">
+    <button class="icon-btn" id="themeBtn" onclick="toggleTheme()" title="Toggle theme">☀️</button>
+  </div>
+</header>
+
+<!-- ── Mode selector ── -->
+<div class="pill-row">
+  <div class="pill-group">
+    <button class="pill active" data-m="classic" onclick="setMode('classic')">Classic</button>
+    <button class="pill" data-m="dual" onclick="setMode('dual')">Dual Track</button>
+  </div>
+</div>
+
+<!-- ── Difficulty ── -->
+<div class="diff-pills">
+  <button class="dpill active" data-d="easy"   onclick="setDiff('easy')">Easy</button>
+  <button class="dpill"        data-d="medium" onclick="setDiff('medium')">Medium</button>
+  <button class="dpill"        data-d="hard"   onclick="setDiff('hard')">Hard</button>
+  <button class="dpill"        data-d="ultra"  onclick="setDiff('ultra')">Ultra</button>
+</div>
+
+<!-- ── Game card ── -->
+<div class="card">
+  <div class="status idle" id="statusBar">Select a blank cell to begin.</div>
+
+  <div class="grid" id="grid"></div>
+
+  <div class="legend">
+    <div class="li"><div class="ld" style="background:var(--num)"></div>number</div>
+    <div class="li"><div class="ld" style="background:var(--let)"></div>letter</div>
+    <div class="li"><div class="ld" style="background:var(--purple)"></div>forced move</div>
+    <div class="li"><div class="ld" style="background:var(--amber)"></div>nudge</div>
+  </div>
+
+  <div class="npad-wrap" id="npad"></div>
+
+  <div class="actions">
+    <button class="act erase"   onclick="eraseCell()">✕ Erase</button>
+    <button class="act nudge-a" onclick="nudge()">⬡ Nudge</button>
+    <button class="act newg"    onclick="newGame()">↻ New Game</button>
+  </div>
+
+  <div class="stats">
+    <div class="sv"><div class="sv-n" id="sM">0</div><div class="sv-l">moves</div></div>
+    <div class="sv"><div class="sv-n" id="sE">0</div><div class="sv-l">errors</div></div>
+    <div class="sv"><div class="sv-n" id="sH">0</div><div class="sv-l">hints</div></div>
+    <div class="sv"><div class="sv-n" id="sT">0:00</div><div class="sv-l">time</div></div>
+  </div>
+</div>
+
+<!-- ── How to play ── -->
+<div class="howto-wrap">
+  <button class="ht-tog" onclick="toggleHowto()">
+    <span>How to play</span><span id="hArr">▼</span>
+  </button>
+  <div class="ht-body" id="hBody">
+    <b>The core rule:</b> Values must strictly increase going right → and down ↓ — but only among values of the same type.<br><br>
+    <b>Classic mode</b> — Fill all 16 cells with numbers 1–16. Every row and every column must be strictly increasing.<br><br>
+    <b>Dual Track mode</b> — The grid holds 8 <span class="hn">numbers (1–8)</span> and 8 <span class="hl">letters (A–H)</span>.<br>
+    Numbers only compare with other numbers. Letters only compare with other letters.<br>
+    Part of the puzzle is figuring out <em>which type</em> belongs in each blank cell — that's the new challenge layer.<br><br>
+    <span class="hp">Purple button</span> = only one valid option exists (forced move).<br>
+    <span class="ha">Nudge</span> = highlights the blank cell with the fewest options to focus your thinking.<br><br>
+    <b>Keyboard:</b> Arrow keys navigate · Numbers/letters to place · Backspace erases · H = nudge · N = new game
+  </div>
+</div>
+
+<!-- ── Win overlay ── -->
+<div class="win-ov" id="winOv">
+  <div class="win-card">
+    <div class="we">🏛</div>
+    <div class="wt">SOLVED</div>
+    <div class="ws" id="wSub"></div>
+    <div class="wss">
+      <div class="sv"><div class="sv-n" id="wM">—</div><div class="sv-l">moves</div></div>
+      <div class="sv"><div class="sv-n" id="wE">—</div><div class="sv-l">errors</div></div>
+      <div class="sv"><div class="sv-n" id="wT">—</div><div class="sv-l">time</div></div>
+    </div>
+    <div class="sc" id="wShare"></div>
+    <div class="wa">
+      <button class="wb pri" onclick="copyShare()">Copy Result</button>
+      <button class="wb sec" onclick="closeWin(); newGame()">Play Again</button>
+    </div>
+  </div>
+</div>
+
+<footer>STIKHOS &copy; 2025 · Novel puzzle mechanic · All rights reserved</footer>
+
+<script>
+/* ================================================================
+   STIKHOS ENGINE
+   Classic: fill 4×4 with 1-16, strictly increasing in rows & cols.
+   Dual Track: 8 numbers (1-8) + 8 letters (A-H), each track
+   strictly increasing independently in rows & cols.
+   Generated by odd/even decomposition of a Standard Young Tableau.
+   ================================================================ */
+
+const N = 4;
+let gameMode   = 'classic';
+let difficulty = 'easy';
+let solution   = [];   // classic: number[]; dual: {type,value,display}[]
+let given      = [];   // boolean[]
+let player     = [];   // same type as solution per cell, or null
+let sel        = -1;
+let moves = 0, errs = 0, hints = 0, solved = false;
+let t0 = null, tid = null, nudgeCell = -1;
+
+const DCFG = {
+  easy:   { givens:10, corners:[0,3,12,15] },
+  medium: { givens:6,  corners:[0,15] },
+  hard:   { givens:4,  corners:[0,3,12,15] },
+  ultra:  { givens:2,  corners:[0] },
+};
+
+/* ── SYT generator (backtracking) ── */
+function genSYT(n) {
+  const tot = n*n, g = new Array(tot).fill(0), nums = Array.from({length:tot},(_,i)=>i+1);
+  const ok = (arr,pos,v) => {
+    const r=Math.floor(pos/n), c=pos%n;
+    for(let cc=0;cc<c;cc++)   if(arr[r*n+cc]&&arr[r*n+cc]>=v) return false;
+    for(let rr=0;rr<r;rr++)   if(arr[rr*n+c]&&arr[rr*n+c]>=v) return false;
+    for(let cc=c+1;cc<n;cc++) if(arr[r*n+cc]&&arr[r*n+cc]<=v) return false;
+    for(let rr=r+1;rr<n;rr++) if(arr[rr*n+c]&&arr[rr*n+c]<=v) return false;
+    return true;
+  };
+  const solve = (arr,pos,used) => {
+    if(pos===tot) return true;
+    const opts = nums.filter(v=>!used.has(v));
+    for(let i=opts.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[opts[i],opts[j]]=[opts[j],opts[i]];}
+    for(const v of opts){if(ok(arr,pos,v)){arr[pos]=v;used.add(v);if(solve(arr,pos+1,used))return true;arr[pos]=0;used.delete(v);}}
+    return false;
+  };
+  solve(g,0,new Set());
+  return g;
+}
+
+/* ── Dual-track solution:
+   odd SYT values (1,3,5,7,9,11,13,15) → numbers 1-8
+   even SYT values (2,4,6,8,10,12,14,16) → letters A-H
+   Since the full SYT is strictly increasing in rows/cols,
+   the odd subset and even subset each maintain that property. ── */
+const ODD_MAP  = {1:1,3:2,5:3,7:4,9:5,11:6,13:7,15:8};
+const EVEN_MAP = {2:1,4:2,6:3,8:4,10:5,12:6,14:7,16:8};
+
+function genDual() {
+  return genSYT(N).map(v => v%2===1
+    ? {type:'num', value:ODD_MAP[v],  display:String(ODD_MAP[v])}
+    : {type:'let', value:EVEN_MAP[v], display:String.fromCharCode(64+EVEN_MAP[v])}
+  );
+}
+
+/* ── Shuffle ── */
+function shuf(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+
+/* ── Select givens ── */
+function selGivens(sol) {
+  const cfg = DCFG[difficulty];
+  const rev = new Set(cfg.corners);
+  if(difficulty==='ultra') rev.add(shuf([5,6,9,10])[0]);
+
+  if(gameMode==='dual'){
+    const ncs=[], lcs=[];
+    for(let i=0;i<N*N;i++) if(!rev.has(i)) (sol[i].type==='num'?ncs:lcs).push(i);
+    shuf(ncs); shuf(lcs);
+    let rn=[...rev].filter(i=>sol[i].type==='num').length;
+    let rl=[...rev].filter(i=>sol[i].type==='let').length;
+    while(rev.size<cfg.givens){
+      if(rn<=rl&&ncs.length){rev.add(ncs.pop());rn++;}
+      else if(lcs.length)    {rev.add(lcs.pop());rl++;}
+      else if(ncs.length)    {rev.add(ncs.pop());rn++;}
+      else break;
+    }
+  } else {
+    const pool = shuf([...Array(N*N).keys()].filter(i=>!rev.has(i)));
+    while(rev.size<cfg.givens&&pool.length) rev.add(pool.pop());
+  }
+  return rev;
+}
+
+/* ── Board state ── */
+function board() {
+  return solution.map((s,i) => given[i] ? s : (player[i]??null));
+}
+
+/* ── Valid ranges ── */
+function validClassic(b,idx){
+  const r=Math.floor(idx/N),c=idx%N;
+  let lo=1,hi=N*N;
+  const used=new Set(b.filter(v=>v!=null));
+  for(let cc=0;cc<c;cc++)   {const v=b[r*N+cc];if(v)lo=Math.max(lo,v+1);}
+  for(let rr=0;rr<r;rr++)   {const v=b[rr*N+c];if(v)lo=Math.max(lo,v+1);}
+  for(let cc=c+1;cc<N;cc++) {const v=b[r*N+cc];if(v)hi=Math.min(hi,v-1);}
+  for(let rr=r+1;rr<N;rr++) {const v=b[rr*N+c];if(v)hi=Math.min(hi,v-1);}
+  return Array.from({length:Math.max(0,hi-lo+1)},(_,i)=>lo+i).filter(v=>!used.has(v));
+}
+
+function validDual(b,idx){
+  const r=Math.floor(idx/N),c=idx%N;
+  let nlo=1,nhi=8,llo=1,lhi=8;
+  const un=new Set(),ul=new Set();
+  b.forEach(cell=>{if(!cell)return;if(cell.type==='num')un.add(cell.value);else ul.add(cell.value);});
+  const scan=(type,isRow)=>{
+    for(let x=0;x<N;x++){
+      const pos=isRow?r*N+x:x*N+c, ix=isRow?x:x;
+      if(pos===idx)continue;
+      const cell=b[pos]; if(!cell||cell.type!==type)continue;
+      const before=isRow?(x<c):(x<r);
+      if(type==='num'){if(before)nlo=Math.max(nlo,cell.value+1);else nhi=Math.min(nhi,cell.value-1);}
+      else            {if(before)llo=Math.max(llo,cell.value+1);else lhi=Math.min(lhi,cell.value-1);}
+    }
+  };
+  scan('num',true); scan('num',false);
+  scan('let',true); scan('let',false);
+  const vn=[],vl=[];
+  for(let v=nlo;v<=nhi;v++) if(!un.has(v)) vn.push(v);
+  for(let v=llo;v<=lhi;v++) if(!ul.has(v)) vl.push(v);
+  return {vn,vl};
+}
+
+/* ── Win check ── */
+function checkWin(){
+  const b=board();
+  if(b.some(v=>!v)) return false;
+  if(gameMode==='classic'){
+    for(let r=0;r<N;r++) for(let c=0;c<N-1;c++) if(b[r*N+c]>=b[r*N+c+1]) return false;
+    for(let c=0;c<N;c++) for(let r=0;r<N-1;r++) if(b[r*N+c]>=b[(r+1)*N+c]) return false;
+  } else {
+    for(const type of['num','let']){
+      for(let r=0;r<N;r++){const row=[];for(let c=0;c<N;c++){const x=b[r*N+c];if(x.type===type)row.push(x.value);}for(let i=0;i<row.length-1;i++)if(row[i]>=row[i+1])return false;}
+      for(let c=0;c<N;c++){const col=[];for(let r=0;r<N;r++){const x=b[r*N+c];if(x.type===type)col.push(x.value);}for(let i=0;i<col.length-1;i++)if(col[i]>=col[i+1])return false;}
+    }
+  }
+  return true;
+}
+
+/* ── New game ── */
+function newGame(){
+  clearInterval(tid);
+  sel=nudgeCell=-1; moves=errs=hints=0; solved=false; t0=null;
+  solution = gameMode==='dual' ? genDual() : genSYT(N);
+  const gs = selGivens(solution);
+  given  = solution.map((_,i)=>gs.has(i));
+  player = new Array(N*N).fill(null);
+  updateStats(); renderGrid(); renderNpad(-1);
+  setS('Select a blank cell to begin.','idle');
+  document.getElementById('winOv').classList.remove('show');
+}
+
+/* ── Render grid ── */
+function renderGrid(){
+  const g=document.getElementById('grid'); g.innerHTML='';
+  const b=board();
+  for(let i=0;i<N*N;i++){
+    const el=document.createElement('div');
+    el.className='cell'; el.dataset.idx=i;
+    if(given[i]){
+      el.classList.add('given');
+      if(gameMode==='dual') el.classList.add(solution[i].type==='num'?'num-t':'let-t');
+      el.textContent = gameMode==='dual' ? solution[i].display : solution[i];
+    } else if(player[i]!=null){
+      el.classList.add('filled');
+      const p=player[i];
+      if(gameMode==='dual'){
+        el.textContent=p.display;
+        const ok=p.type===solution[i].type&&p.value===solution[i].value;
+        el.classList.add(ok?(p.type==='num'?'ok-num':'ok-let'):'wrong');
+      } else {
+        el.textContent=p;
+        el.classList.add(p===solution[i]?'ok-cls':'wrong');
+      }
+    }
+    if(i===sel&&!given[i]) el.classList.add('selected');
+    if(i===nudgeCell&&!given[i]&&player[i]==null) el.classList.add('nudge-t');
+    el.addEventListener('click',()=>selCell(i));
+    g.appendChild(el);
+  }
+}
+
+/* ── Select cell ── */
+function selCell(i){
+  if(given[i]||solved)return;
+  nudgeCell=-1; sel=i;
+  renderGrid();
+  const b=board();
+  if(gameMode==='classic'){
+    const v=validClassic(b,i);
+    if(v.length===1) setS(`Only one valid number here: ${v[0]} (shown in purple)`, 'forced');
+    else if(!v.length) setS('No valid number — something conflicts.','error');
+    else setS(`Valid here: ${v.join(', ')}`,'info');
+  } else {
+    const {vn,vl}=validDual(b,i);
+    const tot=vn.length+vl.length;
+    if(tot===1){const x=vn.length?String(vn[0]):String.fromCharCode(64+vl[0]);setS(`Forced move — only one option: ${x}`,'forced');}
+    else if(!tot) setS('No valid option — something conflicts.','error');
+    else{
+      const ns=vn.length?`numbers: ${vn.join(', ')}`:null;
+      const ls=vl.length?`letters: ${vl.map(v=>String.fromCharCode(64+v)).join(', ')}`:null;
+      setS(`Valid here — ${[ns,ls].filter(Boolean).join(' · ')}`,'info');
+    }
+  }
+  renderNpad(i);
+}
+
+/* ── Place value ── */
+function placeVal(val){
+  if(sel<0||given[sel]||solved)return;
+  if(!t0){t0=Date.now();startTimer();}
+  moves++; player[sel]=val;
+  const ok = gameMode==='classic' ? val===solution[sel]
+    : val.type===solution[sel].type && val.value===solution[sel].value;
+  if(!ok){errs++;setS(`${gameMode==='dual'?val.display:val} is incorrect here.`,'error');}
+  else    setS(`✓ ${gameMode==='dual'?val.display:val} placed correctly.`,'correct');
+  nudgeCell=-1; updateStats();
+  if(checkWin()){solved=true;clearInterval(tid);renderGrid();renderNpad(-1);showWin();return;}
+  renderGrid(); renderNpad(sel);
+}
+
+function eraseCell(){
+  if(sel<0||given[sel]||solved)return;
+  player[sel]=null; setS('Cell cleared.','idle');
+  renderGrid(); renderNpad(sel);
+}
+
+/* ── Nudge ── */
+function nudge(){
+  if(solved)return;
+  hints++; updateStats();
+  const b=board(); let best=-1,bestN=Infinity;
+  for(let i=0;i<N*N;i++){
+    if(given[i]||player[i]!=null)continue;
+    const cnt = gameMode==='classic' ? validClassic(b,i).length : (()=>{const {vn,vl}=validDual(b,i);return vn.length+vl.length;})();
+    if(cnt<bestN){bestN=cnt;best=i;}
+  }
+  if(best<0){setS('All cells filled!','info');return;}
+  nudgeCell=best; sel=best; renderGrid();
+  const b2=board();
+  if(gameMode==='classic'){
+    const v=validClassic(b2,best);
+    setS(`Nudge → row ${Math.floor(best/N)+1}, col ${best%N+1} — options: ${v.join(', ')}`,'nudge');
+  } else {
+    const {vn,vl}=validDual(b2,best);
+    const ns=vn.length?`nums ${vn.join(',')}`:null;
+    const ls=vl.length?`lets ${vl.map(v=>String.fromCharCode(64+v)).join(',')}`:null;
+    setS(`Nudge → row ${Math.floor(best/N)+1}, col ${best%N+1} — ${[ns,ls].filter(Boolean).join(' / ')}`,'nudge');
+  }
+  renderNpad(best);
+}
+
+/* ── Render numpad ── */
+function renderNpad(idx){
+  const wrap=document.getElementById('npad'); wrap.innerHTML='';
+  const b=board();
+  const isActive = idx>=0 && !given[idx];
+
+  if(gameMode==='classic'){
+    // 4 rows × 4 buttons
+    const usedSet=new Set(b.filter(v=>v!=null));
+    const valid = isActive ? new Set(validClassic(b,idx)) : new Set();
+    const isForced = valid.size===1;
+    for(let row=0;row<4;row++){
+      const rowEl=document.createElement('div'); rowEl.className='npad-row';
+      for(let col=0;col<4;col++){
+        const v=row*4+col+1;
+        const btn=document.createElement('button'); btn.className='nb'; btn.textContent=v;
+        const curVal = isActive ? (player[idx]) : null;
+        const alreadyUsed = usedSet.has(v) && curVal!==v;
+        if(!isActive || alreadyUsed) btn.classList.add('off');
+        else if(isForced&&valid.has(v)) {btn.classList.add('frc');btn.addEventListener('click',()=>placeVal(v));}
+        else if(valid.has(v)) {btn.classList.add('vc');btn.addEventListener('click',()=>placeVal(v));}
+        else btn.classList.add('off');
+        rowEl.appendChild(btn);
+      }
+      wrap.appendChild(rowEl);
+    }
+  } else {
+    // Dual track: numbers row + divider + letters row
+    let vn=new Set(),vl=new Set(),forced=false;
+    if(isActive){const r=validDual(b,idx);vn=new Set(r.vn);vl=new Set(r.vl);forced=(r.vn.length+r.vl.length)===1;}
+    const usedN=new Set(b.filter(c=>c&&c.type==='num').map(c=>c.value));
+    const usedL=new Set(b.filter(c=>c&&c.type==='let').map(c=>c.value));
+    const curCell = isActive ? player[idx] : null;
+
+    const mkLabel = (text,color) => { const l=document.createElement('div');l.className='npad-label';l.style.color=`var(--${color})`;l.textContent=text;wrap.appendChild(l); };
+    const mkRow   = (count,cbVal,usedSet,validSet,isNum) => {
+      const row=document.createElement('div');row.className='npad-row';
+      for(let v=1;v<=count;v++){
+        const display = isNum ? String(v) : String.fromCharCode(64+v);
+        const btn=document.createElement('button');btn.className='nb';btn.textContent=display;
+        const type = isNum ? 'num' : 'let';
+        const curMatch = curCell&&curCell.type===type&&curCell.value===v;
+        const used = usedSet.has(v) && !curMatch;
+        if(!isActive||used){btn.classList.add('off');}
+        else if(forced&&validSet.has(v)){btn.classList.add('frc');btn.addEventListener('click',()=>placeVal({type,value:v,display}));}
+        else if(validSet.has(v)){btn.classList.add(isNum?'vn':'vl');btn.addEventListener('click',()=>placeVal({type,value:v,display}));}
+        else btn.classList.add('off');
+        row.appendChild(btn);
+      }
+      wrap.appendChild(row);
+    };
+
+    mkLabel('◆ Numbers','num');
+    mkRow(8,null,usedN,vn,true);
+    const div=document.createElement('div');div.className='divider';div.textContent='or';wrap.appendChild(div);
+    mkLabel('◆ Letters','let');
+    mkRow(8,null,usedL,vl,false);
+  }
+}
+
+/* ── Status / stats / timer ── */
+function setS(msg,type){const el=document.getElementById('statusBar');el.textContent=msg;el.className=`status ${type}`;}
+function startTimer(){tid=setInterval(()=>{const s=Math.floor((Date.now()-t0)/1000);document.getElementById('sT').textContent=`${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`;},500);}
+function updateStats(){document.getElementById('sM').textContent=moves;document.getElementById('sE').textContent=errs;document.getElementById('sH').textContent=hints;}
+
+/* ── Win screen ── */
+function showWin(){
+  setS('🏛 Solved! You ascended the grid.','win');
+  const s=Math.floor((Date.now()-t0)/1000);
+  const tstr=`${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`;
+  document.getElementById('wM').textContent=moves;
+  document.getElementById('wE').textContent=errs;
+  document.getElementById('wT').textContent=tstr;
+  const perfect=errs===0&&hints===0;
+  document.getElementById('wSub').textContent=
+    `${difficulty.toUpperCase()} · ${gameMode==='dual'?'DUAL TRACK':'CLASSIC'} · ${tstr}${perfect?' ⭐ Perfect!':''}`;
+
+  const b=board();
+  let share=`STIKHOS · ${difficulty.toUpperCase()}${gameMode==='dual'?' · DUAL':''}\n`;
+  for(let r=0;r<N;r++){
+    let row='';
+    for(let c=0;c<N;c++){
+      const i=r*N+c;
+      if(given[i]){row+=gameMode==='dual'?(solution[i].type==='num'?'🟦':'🟨'):'🟨';}
+      else{const p=player[i];const ok=gameMode==='classic'?p===solution[i]:p&&p.type===solution[i].type&&p.value===solution[i].value;row+=ok?'🟩':'🟥';}
+    }
+    share+=row+'\n';
+  }
+  share+=`Moves:${moves} Errors:${errs} Time:${tstr}${perfect?' ⭐':''}`;
+  document.getElementById('wShare').textContent=share;
+  document.getElementById('winOv').classList.add('show');
+}
+function closeWin(){document.getElementById('winOv').classList.remove('show');}
+function copyShare(){
+  navigator.clipboard.writeText(document.getElementById('wShare').textContent).then(()=>{
+    const b=document.querySelector('.wb.pri');b.textContent='Copied ✓';
+    setTimeout(()=>b.textContent='Copy Result',1600);
+  });
+}
+
+/* ── Theme ── */
+let dark=true;
+function toggleTheme(){
+  dark=!dark;
+  document.documentElement.setAttribute('data-theme',dark?'dark':'light');
+  document.getElementById('themeBtn').textContent=dark?'☀️':'🌙';
+}
+
+/* ── Mode / diff ── */
+function setMode(m){
+  gameMode=m;
+  document.querySelectorAll('.pill').forEach(b=>b.classList.toggle('active',b.dataset.m===m));
+  newGame();
+}
+function setDiff(d){
+  difficulty=d;
+  document.querySelectorAll('.dpill').forEach(b=>b.classList.toggle('active',b.dataset.d===d));
+  newGame();
+}
+
+/* ── How to ── */
+function toggleHowto(){
+  const b=document.getElementById('hBody'),a=document.getElementById('hArr');
+  b.classList.toggle('open');a.textContent=b.classList.contains('open')?'▲':'▼';
+}
+
+/* ── Keyboard ── */
+document.addEventListener('keydown',e=>{
+  if(e.key==='n'||e.key==='N'){newGame();return;}
+  if(e.key==='h'||e.key==='H'){nudge();return;}
+  if(e.key==='Backspace'||e.key==='Delete'){eraseCell();return;}
+  const arrows={ArrowRight:1,ArrowLeft:-1,ArrowDown:N,ArrowUp:-N};
+  if(arrows[e.key]!==undefined){
+    e.preventDefault();
+    if(sel<0){selCell(0);return;}
+    let nx=sel+arrows[e.key];
+    if(nx<0||nx>=N*N)return;
+    if(Math.abs(arrows[e.key])===1&&Math.floor(nx/N)!==Math.floor(sel/N))return;
+    selCell(nx);return;
+  }
+  if(sel<0||given[sel]||solved)return;
+  if(gameMode==='classic'){const n=parseInt(e.key);if(!isNaN(n)&&n>=1&&n<=N*N)placeVal(n);}
+  else{
+    const n=parseInt(e.key);
+    if(!isNaN(n)&&n>=1&&n<=8){placeVal({type:'num',value:n,display:String(n)});return;}
+    if(e.key.match(/^[a-hA-H]$/)){const v=e.key.toUpperCase().charCodeAt(0)-64;placeVal({type:'let',value:v,display:e.key.toUpperCase()});}
+  }
+});
+
+/* ── Boot ── */
+newGame();
+</script>
+</body>
+</html>

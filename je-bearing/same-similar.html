@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Same / Similar — Part Intelligence</title>
+  <link rel="stylesheet" href="css/main.css"/>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    .calc-panel {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--r-lg);
+      overflow: hidden;
+    }
+    .calc-header {
+      padding: 16px 24px; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .calc-label { font-family: var(--ff-mono); font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.15em; color: var(--accent); }
+    .calc-body  { padding: 24px; }
+    .processing-strip { height: 3px; background: var(--surface3); overflow: hidden; }
+    .processing-fill  { height: 100%; width: 0%; background: linear-gradient(90deg,var(--accent),var(--success)); transition: width 0.5s ease; }
+
+    .match-card {
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: var(--r); padding: 16px 18px;
+      display: flex; flex-direction: column; gap: 10px;
+      transition: border-color 0.2s;
+    }
+    .match-card.top1 { border-color: rgba(34,197,94,0.4); }
+    .match-rank {
+      font-family: var(--ff-mono); font-size: 0.65rem;
+      text-transform: uppercase; letter-spacing: 0.12em; color: var(--muted);
+    }
+    .match-score {
+      font-family: var(--ff-head); font-size: 1.8rem; font-weight: 700; line-height: 1;
+    }
+    .match-bar { height: 4px; background: var(--surface3); border-radius: 2px; overflow: hidden; }
+    .match-bar-fill { height: 100%; border-radius: 2px; background: linear-gradient(90deg,var(--accent),var(--success)); transition: width 0.6s; }
+
+    .rec-row { display: flex; gap: 12px; align-items: flex-start; padding: 14px 16px; background: var(--surface2); border-radius: var(--r-sm); border-left: 3px solid; font-size: 0.85rem; line-height: 1.5; }
+
+    .family-btn {
+      width: 100%; text-align: left; padding: 12px 16px;
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: var(--r-sm); cursor: pointer; transition: all 0.2s;
+      display: flex; align-items: center; gap: 12px; font-size: 0.85rem; color: var(--text);
+    }
+    .family-btn:hover, .family-btn.active {
+      border-color: var(--accent); background: rgba(56,189,248,0.07);
+    }
+
+    .mode-tab {
+      padding: 10px 20px; border-radius: var(--r-sm);
+      background: var(--surface2); border: 1px solid var(--border);
+      font-size: 0.82rem; font-weight: 600; cursor: pointer;
+      transition: all 0.2s; color: var(--muted);
+    }
+    .mode-tab.active { background: rgba(56,189,248,0.1); border-color: var(--accent); color: var(--accent); }
+  </style>
+</head>
+<body>
+<script src="js/data.js"></script>
+<script src="js/nav.js"></script>
+
+<!-- ── WHAT IS THIS MODULE ────────────────────────────── -->
+<div class="page-header">
+  <div class="container">
+    <div class="kicker">Module SS · Part Intelligence</div>
+    <h1 class="h-display mb-16">Same / Similar Part Intelligence</h1>
+    <p style="max-width:680px">Finds comparable prior jobs to infer setup reusability, routing families, and cycle time confidence. Two search modes: structured ERP attribute matching, or geometry/image-based classification.</p>
+    <div style="display:flex;gap:24px;flex-wrap:wrap;margin-top:28px">
+      <div><div class="kpi-label mb-4">What it creates</div><div class="text-sm">Ranked similarity matches with savings estimates and confidence bands</div></div>
+      <div style="width:1px;background:var(--border)"></div>
+      <div><div class="kpi-label mb-4">My contribution</div><div class="text-sm">Designed the weighted similarity formula, geometry layer concept, and savings estimator</div></div>
+      <div style="width:1px;background:var(--border)"></div>
+      <div><div class="kpi-label mb-4">Impact</div><div class="text-sm" style="color:var(--success)">60–80% faster quoting · 1–3h/week setup reuse savings</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── KPI STRIP ──────────────────────────────────────── -->
+<section style="padding:28px 0">
+  <div class="container">
+    <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr)">
+      <div class="kpi-card accent-border">
+        <div class="kpi-label">Parts in Database</div>
+        <div class="kpi-value">5</div>
+        <div class="kpi-sub">Sample canonical parts</div>
+      </div>
+      <div class="kpi-card success-border">
+        <div class="kpi-label">Max Similarity Score</div>
+        <div class="kpi-value" id="kpi-topscore">—</div>
+        <div class="kpi-sub">Best match for active query</div>
+      </div>
+      <div class="kpi-card warning-border">
+        <div class="kpi-label">Setup Hours Saveable</div>
+        <div class="kpi-value" id="kpi-setupsav">—</div>
+        <div class="kpi-sub">If top match reused</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Cycle Confidence</div>
+        <div class="kpi-value" id="kpi-cycleconf">—</div>
+        <div class="kpi-sub">Prediction confidence from match</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ── SEARCH MODE TABS ───────────────────────────────── -->
+<section>
+  <div class="container">
+    <div class="kicker mb-8">Step 1 — Choose Search Method</div>
+    <div style="display:flex;gap:10px;margin-bottom:36px;flex-wrap:wrap">
+      <button class="mode-tab active" id="tab-erp" onclick="setMode('erp')">🗃️ ERP Attribute Matching</button>
+      <button class="mode-tab" id="tab-geo" onclick="setMode('geo')">📐 Geometry / Image Classification</button>
+    </div>
+
+    <!-- ERP MODE ─────────────────────────────────────── -->
+    <div id="panel-erp">
+      <div class="grid-2 gap-28">
+        <!-- Inputs -->
+        <div>
+          <div class="calc-panel">
+            <div class="calc-header">
+              <div>
+                <div class="calc-label">Step 2 — Inputs</div>
+                <div style="font-size:0.85rem;font-weight:600;margin-top:2px">Set part attributes or select a reference part</div>
+              </div>
+              <button onclick="clearQuery()" class="btn btn-ghost btn-sm">Clear</button>
+            </div>
+            <div class="calc-body">
+              <div class="flex-col gap-14">
+                <div>
+                  <div class="kpi-label mb-6">Material</div>
+                  <select id="q-mat" onchange="runSearch()">
+                    <option value="">Any</option>
+                    <option value="4140 Steel">4140 Steel</option>
+                    <option value="17-4 PH">17-4 PH Stainless</option>
+                    <option value="304 SS">304 Stainless</option>
+                    <option value="6061 Aluminum">6061 Aluminum</option>
+                    <option value="A36 Steel">A36 Steel</option>
+                  </select>
+                </div>
+                <div>
+                  <div class="kpi-label mb-6">Routing Family</div>
+                  <select id="q-rout" onchange="runSearch()">
+                    <option value="">Any</option>
+                    <option value="Turn-Grind-Inspect">Turn-Grind-Inspect</option>
+                    <option value="Turn-Mill-Deburr-Inspect">Turn-Mill-Deburr-Inspect</option>
+                    <option value="Face-Mill-Drill-Deburr-Inspect">Face-Mill-Drill-Deburr-Inspect</option>
+                    <option value="Face-Bore-Mill-Inspect">Face-Bore-Mill-Inspect</option>
+                    <option value="Saw-Face-Drill-Inspect">Saw-Face-Drill-Inspect</option>
+                  </select>
+                </div>
+                <div>
+                  <div class="kpi-label mb-6">Setup Family</div>
+                  <select id="q-setup" onchange="runSearch()">
+                    <option value="">Any</option>
+                    <option value="Ring Soft Jaw">Ring Soft Jaw</option>
+                    <option value="Shaft Collet">Shaft Collet</option>
+                    <option value="Flange Face Fixture">Flange Face Fixture</option>
+                    <option value="Box Fixture">Box Fixture</option>
+                    <option value="Vise">Vise</option>
+                  </select>
+                </div>
+                <div>
+                  <div class="kpi-label mb-6">Machine Family</div>
+                  <select id="q-mach" onchange="runSearch()">
+                    <option value="">Any</option>
+                    <option value="CNC Lathe">CNC Lathe</option>
+                    <option value="CNC Mill">CNC Mill</option>
+                    <option value="CNC Mill + Lathe">CNC Mill + Lathe</option>
+                    <option value="Manual Mill">Manual Mill</option>
+                  </select>
+                </div>
+                <div>
+                  <div class="kpi-label mb-6">Tolerance Class</div>
+                  <select id="q-tol" onchange="runSearch()">
+                    <option value="">Any</option>
+                    <option value="Tight">Tight</option>
+                    <option value="Medium">Medium</option>
+                    <option value="Loose">Loose</option>
+                  </select>
+                </div>
+              </div>
+
+              <div style="margin-top:20px;padding-top:20px;border-top:1px solid var(--border)">
+                <div class="kpi-label mb-10">Quick-select reference part</div>
+                <div class="flex-col gap-6" id="ref-btns"></div>
+              </div>
+            </div>
+            <div class="processing-strip"><div class="processing-fill" id="proc-erp"></div></div>
+          </div>
+        </div>
+
+        <!-- Outputs -->
+        <div class="flex-col gap-20">
+          <!-- Proc status -->
+          <div style="display:flex;align-items:center;gap:10px;font-family:var(--ff-mono);font-size:0.72rem;color:var(--accent)">
+            <span id="erp-icon">○</span><span id="erp-status">Select attributes or a reference part to search</span>
+          </div>
+
+          <!-- Match cards -->
+          <div class="flex-col gap-10" id="match-results">
+            <div style="padding:40px;text-align:center;border:1px dashed var(--border2);border-radius:var(--r)">
+              <div style="font-size:2rem;margin-bottom:10px;opacity:0.3">🔍</div>
+              <div class="muted-text text-sm">Matches will appear here</div>
+            </div>
+          </div>
+
+          <!-- Savings chart (hidden until results) -->
+          <div class="chart-wrap" id="savings-chart" style="display:none;padding:16px">
+            <div class="chart-title" style="font-size:0.82rem">Setup Hours Saved per Match</div>
+            <div style="height:160px;position:relative"><canvas id="ch-savings"></canvas></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- GEO MODE ─────────────────────────────────────── -->
+    <div id="panel-geo" style="display:none">
+      <div class="grid-2 gap-28">
+        <!-- Inputs -->
+        <div class="flex-col gap-16">
+          <!-- Upload zone -->
+          <div class="calc-panel">
+            <div class="calc-header">
+              <div>
+                <div class="calc-label">Step 2 — Image Input</div>
+                <div style="font-size:0.85rem;font-weight:600;margin-top:2px">Upload a part image or choose a geometry family</div>
+              </div>
+            </div>
+            <div class="calc-body">
+              <div class="upload-zone" id="upload-zone" onclick="document.getElementById('file-input').click()">
+                <input type="file" id="file-input" accept="image/*" style="display:none" onchange="handleUpload(event)">
+                <div class="upload-icon">📐</div>
+                <div class="upload-text"><strong>Click to upload a part image or CAD thumbnail</strong><br>PNG, JPG, any format — portfolio simulation</div>
+              </div>
+              <div id="preview-box" style="display:none;margin-top:12px">
+                <img id="preview-img" style="max-height:140px;border-radius:var(--r-sm);border:1px solid var(--border2);object-fit:contain;width:100%">
+                <div class="badge badge-accent badge-dot mt-8">Classifying geometry…</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="calc-panel">
+            <div class="calc-header">
+              <div class="calc-label">Or — choose part family directly</div>
+            </div>
+            <div class="calc-body">
+              <div class="flex-col gap-8">
+                <button class="family-btn" onclick="pickFamily('ring_like',this)">   <span>🔘</span><span><strong>Ring-like</strong> — Bearing races, rings, collars</span></button>
+                <button class="family-btn" onclick="pickFamily('shaft_like',this)">  <span>📏</span><span><strong>Shaft-like</strong> — Shafts, spindles, pins</span></button>
+                <button class="family-btn" onclick="pickFamily('flange_like',this)"> <span>🔩</span><span><strong>Flange-like</strong> — Flanges, plates, discs</span></button>
+                <button class="family-btn" onclick="pickFamily('housing_like',this)"><span>📦</span><span><strong>Housing-like</strong> — Housings, blocks, castings</span></button>
+                <button class="family-btn" onclick="pickFamily('bracket_like',this)"><span>🔧</span><span><strong>Bracket-like</strong> — Brackets, weldments, frames</span></button>
+              </div>
+            </div>
+            <div class="processing-strip"><div class="processing-fill" id="proc-geo"></div></div>
+          </div>
+        </div>
+
+        <!-- Geo results -->
+        <div id="geo-results" style="display:none" class="flex-col gap-16">
+          <!-- Classification output -->
+          <div class="output-box">
+            <div class="flex justify-between items-start mb-16">
+              <div>
+                <div class="kpi-label mb-4">Classified As</div>
+                <div id="geo-family" style="font-family:var(--ff-head);font-size:1.4rem;font-weight:700;color:var(--accent)"></div>
+              </div>
+              <div style="text-align:right">
+                <div class="kpi-label mb-4">Confidence</div>
+                <div id="geo-conf" style="font-family:var(--ff-head);font-size:1.4rem;font-weight:700;color:var(--warning)"></div>
+              </div>
+            </div>
+            <div class="grid-2 gap-10">
+              <div class="kpi-card card-sm" style="padding:10px 12px">
+                <div class="kpi-label" style="font-size:0.6rem">Routing Family</div>
+                <div id="geo-routing" style="font-size:0.85rem;font-weight:600;margin-top:4px"></div>
+              </div>
+              <div class="kpi-card card-sm" style="padding:10px 12px">
+                <div class="kpi-label" style="font-size:0.6rem">Setup Family</div>
+                <div id="geo-setup" style="font-size:0.85rem;font-weight:600;margin-top:4px"></div>
+              </div>
+              <div class="kpi-card card-sm" style="padding:10px 12px" style="grid-column:span 2">
+                <div class="kpi-label" style="font-size:0.6rem">Machine Family</div>
+                <div id="geo-machines" style="font-size:0.85rem;font-weight:600;margin-top:4px"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Geo matches -->
+          <div>
+            <div class="kpi-label mb-10">Top Similar Parts</div>
+            <div class="flex-col gap-8" id="geo-matches"></div>
+          </div>
+
+          <div class="card card-sm" style="background:var(--surface2)">
+            <div class="flex gap-8">
+              <span>ℹ️</span>
+              <div class="text-xs muted-text">Portfolio simulation — in production, this layer uses a vision classifier trained on CAD thumbnails mapped to ERP part families.</div>
+            </div>
+          </div>
+        </div>
+
+        <div id="geo-placeholder" style="display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;min-height:300px;border:1px dashed var(--border2);border-radius:var(--r);text-align:center;padding:40px">
+          <div style="font-size:3rem;opacity:0.2">📐</div>
+          <div class="muted-text text-sm">Upload an image or select a geometry family to classify</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ── STEP 4: RECOMMENDATIONS ───────────────────────── -->
+<section style="background:var(--surface)">
+  <div class="container">
+    <div class="kicker mb-8">Step 4 — Recommendations</div>
+    <h2 class="h-section mb-24">What to do with the similarity results</h2>
+    <div class="flex-col gap-10" id="ss-recs">
+      <div class="rec-row accent" style="border-left-color:var(--muted)"><span>ℹ️</span><span class="muted-text">Run a search above to generate recommendations</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section style="text-align:center">
+  <div class="container">
+    <h2 class="h-section mb-12">See the business impact</h2>
+    <p class="muted-text mb-32" style="max-width:440px;margin-left:auto;margin-right:auto">Understand how all three modules translate to quantifiable savings across decision categories.</p>
+    <a href="impact.html" class="btn btn-primary btn-lg">View Business Impact →</a>
+  </div>
+</section>
+
+<script>
+var ssChart = null;
+var activeMode = 'erp';
+var selectedRef = null;
+
+function setMode(mode) {
+  activeMode = mode;
+  document.getElementById('panel-erp').style.display = mode === 'erp' ? '' : 'none';
+  document.getElementById('panel-geo').style.display = mode === 'geo' ? '' : 'none';
+  document.getElementById('tab-erp').className = 'mode-tab' + (mode === 'erp' ? ' active' : '');
+  document.getElementById('tab-geo').className = 'mode-tab' + (mode === 'geo' ? ' active' : '');
+}
+
+function clearQuery() {
+  ['q-mat','q-rout','q-setup','q-mach','q-tol'].forEach(function(id){ document.getElementById(id).value = ''; });
+  selectedRef = null;
+  document.querySelectorAll('#ref-btns button').forEach(function(b){ b.classList.remove('active'); });
+  document.getElementById('match-results').innerHTML = '<div style="padding:40px;text-align:center;border:1px dashed var(--border2);border-radius:var(--r)"><div style="font-size:2rem;margin-bottom:10px;opacity:0.3">🔍</div><div class="muted-text text-sm">Matches will appear here</div></div>';
+  document.getElementById('savings-chart').style.display = 'none';
+  document.getElementById('erp-icon').textContent = '○';
+  document.getElementById('erp-status').textContent = 'Select attributes or a reference part to search';
+  resetKPIs();
+  resetRecs();
+}
+
+function resetKPIs() {
+  document.getElementById('kpi-topscore').textContent = '—';
+  document.getElementById('kpi-setupsav').textContent = '—';
+  document.getElementById('kpi-cycleconf').textContent = '—';
+}
+
+function resetRecs() {
+  document.getElementById('ss-recs').innerHTML = '<div class="rec-row accent" style="border-left-color:var(--muted)"><span>ℹ️</span><span class="muted-text">Run a search above to generate recommendations</span></div>';
+}
+
+function buildRefBtns() {
+  document.getElementById('ref-btns').innerHTML = JEB.parts.map(function(p) {
+    return '<button class="toggle-btn w-full" style="text-align:left;font-size:0.78rem" onclick="selectRef(\'' + p.partId + '\',this)">' +
+      p.partId + ' — ' + p.partFamily + ' · ' + p.material + '</button>';
+  }).join('');
+}
+
+function selectRef(pid, btn) {
+  selectedRef = JEB.parts.find(function(p){ return p.partId === pid; });
+  document.querySelectorAll('#ref-btns .toggle-btn').forEach(function(b){ b.classList.remove('active'); });
+  btn.classList.add('active');
+  // Pre-fill form
+  document.getElementById('q-mat').value   = selectedRef.material;
+  document.getElementById('q-rout').value  = selectedRef.routingFamily;
+  document.getElementById('q-setup').value = selectedRef.setupFamily;
+  document.getElementById('q-mach').value  = selectedRef.machineFamily;
+  document.getElementById('q-tol').value   = selectedRef.toleranceClass;
+  runSearch();
+}
+
+function animProc(id) {
+  var bar = document.getElementById(id);
+  bar.style.width = '0%';
+  setTimeout(function(){ bar.style.width = '60%'; }, 40);
+  setTimeout(function(){ bar.style.width = '100%'; }, 300);
+}
+
+function runSearch() {
+  var mat   = document.getElementById('q-mat').value;
+  var rout  = document.getElementById('q-rout').value;
+  var setup = document.getElementById('q-setup').value;
+  var mach  = document.getElementById('q-mach').value;
+  var tol   = document.getElementById('q-tol').value;
+
+  if (!mat && !rout && !setup && !mach && !tol && !selectedRef) {
+    clearQuery(); return;
+  }
+
+  animProc('proc-erp');
+  document.getElementById('erp-icon').textContent = '⟳';
+  document.getElementById('erp-status').textContent = 'Scoring similarity…';
+
+  setTimeout(function() {
+    document.getElementById('erp-icon').textContent = '✓';
+    document.getElementById('erp-status').textContent = 'Match complete';
+
+    var candidates;
+    if (selectedRef) {
+      candidates = selectedRef.candidates.map(function(c) {
+        return { partId: c.partId, partFamily: selectedRef.partFamily, material: selectedRef.material,
+          setupFamily: selectedRef.setupFamily, routingFamily: selectedRef.routingFamily,
+          machineFamily: selectedRef.machineFamily, toleranceClass: selectedRef.toleranceClass,
+          historicalSetupH: +(selectedRef.historicalSetupH * (0.8 + Math.random()*0.4)).toFixed(1),
+          historicalCycleMin: +(selectedRef.historicalCycleMin * (0.8 + Math.random()*0.4)).toFixed(1),
+          repeatRuns: Math.floor(Math.random()*6)+1, imageFamily: selectedRef.imageFamily,
+          score: c.score, reasons: c.reasons };
+      });
+    } else {
+      var query = { material:mat, routingFamily:rout, setupFamily:setup, machineFamily:mach, toleranceClass:tol, diameterMm:80, imageFamily:'' };
+      candidates = JEB.parts.map(function(p){ return Object.assign({},p,{score:JEB.similarityScore(p,query)}); })
+        .filter(function(p){ return p.score > 0.25; })
+        .sort(function(a,b){ return b.score-a.score; }).slice(0,5);
+      candidates.forEach(function(c){ c.reasons = ['Attribute-matched']; });
+    }
+
+    if (candidates.length === 0) {
+      document.getElementById('match-results').innerHTML = '<div class="muted-text text-sm" style="padding:20px;text-align:center">No matches above threshold — try broader attributes</div>';
+      resetKPIs(); resetRecs(); return;
+    }
+
+    // Update KPIs
+    var top = candidates[0];
+    var topPct = Math.round(top.score * 100);
+    var topSav = +(top.historicalSetupH * top.score * 0.6).toFixed(1);
+    var topConf = Math.round(top.score * 95);
+    document.getElementById('kpi-topscore').textContent = topPct + '%';
+    document.getElementById('kpi-setupsav').textContent = topSav + 'h';
+    document.getElementById('kpi-cycleconf').textContent = topConf + '%';
+
+    // Match cards
+    document.getElementById('match-results').innerHTML = candidates.map(function(c, i) {
+      var pct = Math.round(c.score * 100);
+      var setupSav = +(c.historicalSetupH * c.score * 0.6).toFixed(1);
+      var cycleConf = Math.round(c.score * 92);
+      var scoreColor = pct >= 85 ? 'var(--success)' : pct >= 70 ? 'var(--accent)' : 'var(--warning)';
+      return '<div class="match-card' + (i===0?' top1':'') + '">' +
+        '<div class="flex justify-between items-center">' +
+          '<div><span class="match-rank">#' + (i+1) + '</span><span style="margin-left:8px;font-weight:700">' + c.partId + '</span><span class="muted-text text-sm" style="margin-left:6px">— ' + (c.partFamily||'') + '</span></div>' +
+          '<div class="match-score" style="color:' + scoreColor + '">' + pct + '%</div>' +
+        '</div>' +
+        '<div class="match-bar"><div class="match-bar-fill" style="width:' + pct + '%"></div></div>' +
+        '<div style="display:flex;gap:6px;flex-wrap:wrap">' + (c.reasons||[]).map(function(r){ return '<span class="sim-tag">' + r + '</span>'; }).join('') + '</div>' +
+        '<div class="grid-3 gap-8 text-xs">' +
+          '<div class="kpi-card card-sm" style="padding:8px 10px"><div class="kpi-label" style="font-size:0.6rem">Setup Saved</div><div style="font-family:var(--ff-mono);color:var(--success);font-weight:700">' + setupSav + 'h</div></div>' +
+          '<div class="kpi-card card-sm" style="padding:8px 10px"><div class="kpi-label" style="font-size:0.6rem">Cycle Conf.</div><div style="font-family:var(--ff-mono);color:var(--accent);font-weight:700">' + cycleConf + '%</div></div>' +
+          '<div class="kpi-card card-sm" style="padding:8px 10px"><div class="kpi-label" style="font-size:0.6rem">Run History</div><div style="font-family:var(--ff-mono);color:var(--muted);font-weight:700">' + c.repeatRuns + '×</div></div>' +
+        '</div></div>';
+    }).join('');
+
+    // Savings chart
+    document.getElementById('savings-chart').style.display = '';
+    if (ssChart) ssChart.destroy();
+    var ctx = document.getElementById('ch-savings').getContext('2d');
+    ssChart = new Chart(ctx, { type:'bar', data:{
+      labels: candidates.map(function(c){ return c.partId; }),
+      datasets:[{ label:'Setup Hrs Saved', data: candidates.map(function(c){ return +(c.historicalSetupH*c.score*0.6).toFixed(2); }),
+        backgroundColor:'rgba(34,197,94,0.55)', borderColor:'#22C55E', borderWidth:1, borderRadius:4 }]},
+      options:{ responsive:true, maintainAspectRatio:false,
+        plugins:{ legend:{ display:false } },
+        scales:{ x:{ ticks:{ color:'#6B7280', font:{ family:"'IBM Plex Mono'", size:9 } }, grid:{ color:'rgba(255,255,255,0.04)' } },
+                 y:{ ticks:{ color:'#6B7280', font:{ family:"'IBM Plex Mono'", size:9 } }, grid:{ color:'rgba(255,255,255,0.05)' } } }
+      }
+    });
+
+    // Recommendations
+    buildSearchRecs(candidates, top, topSav, topPct);
+  }, 500);
+}
+
+function buildSearchRecs(candidates, top, topSav, topPct) {
+  var recs = [];
+  if (topPct >= 85) recs.push({ t:'success', i:'✅', h:'Strong setup reuse opportunity', b: top.partId + ' matches at ' + topPct + '% — schedule it before or after the new job on the same machine to save ' + topSav + 'h of setup time.' });
+  if (topPct < 60)  recs.push({ t:'warning', i:'⚠️', h:'Low confidence match', b:'Best match is only ' + topPct + '%. Consider this a rough estimate — verify setup requirements independently before committing to the cycle time.' });
+  if (top.repeatRuns >= 4) recs.push({ t:'success', i:'📈', h:'Learning curve benefit available', b: top.partId + ' has run ' + top.repeatRuns + ' times. The operator will be faster. Expect setup time closer to ' + (+(top.historicalSetupH * 0.75).toFixed(1)) + 'h on this job.' });
+  recs.push({ t:'accent', i:'📋', h:'Use for quoting', b:'Historical setup ' + top.historicalSetupH + 'h and cycle ' + top.historicalCycleMin + ' min/part from ' + top.partId + ' give a defensible basis for the new job quote. Apply similarity score as a confidence weight.' });
+  if (candidates.length >= 3) recs.push({ t:'accent', i:'🔗', h:'Multiple reuse candidates', b:candidates.length + ' similar jobs found. Sequence them together in the weekly schedule to minimize total setup time across the run.' });
+
+  document.getElementById('ss-recs').innerHTML = recs.map(function(r) {
+    return '<div class="rec-row ' + r.t + '"><div style="font-size:1.1rem;flex-shrink:0">' + r.i + '</div><div><strong>' + r.h + '</strong><br><span class="muted-text">' + r.b + '</span></div></div>';
+  }).join('');
+}
+
+function pickFamily(family, btn) {
+  document.querySelectorAll('.family-btn').forEach(function(b){ b.classList.remove('active'); });
+  btn.classList.add('active');
+  animProc('proc-geo');
+  setTimeout(function(){ showGeoResult(family); }, 500);
+}
+
+function handleUpload(e) {
+  var file = e.target.files[0]; if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function(ev) {
+    document.getElementById('preview-img').src = ev.target.result;
+    document.getElementById('preview-box').style.display = '';
+    var name = file.name.toLowerCase();
+    var family = name.includes('ring')||name.includes('bearing') ? 'ring_like' :
+                 name.includes('shaft')||name.includes('spin')   ? 'shaft_like' :
+                 name.includes('flange')||name.includes('disc')  ? 'flange_like':
+                 name.includes('housing')||name.includes('block')? 'housing_like':
+                 name.includes('bracket')                        ? 'bracket_like':
+                 ['ring_like','shaft_like','flange_like','housing_like','bracket_like'][Math.floor(Math.random()*5)];
+    animProc('proc-geo');
+    setTimeout(function(){ showGeoResult(family); }, 800);
+  };
+  reader.readAsDataURL(file);
+}
+
+function showGeoResult(family) {
+  var info = JEB.imageFamilyMap[family];
+  var matchPart = JEB.parts.find(function(p){ return p.imageFamily === family; });
+
+  document.getElementById('geo-results').style.display    = '';
+  document.getElementById('geo-placeholder').style.display = 'none';
+
+  document.getElementById('geo-family').textContent   = info.label;
+  document.getElementById('geo-conf').textContent     = Math.round(info.confidence * 100) + '%';
+  document.getElementById('geo-routing').textContent  = info.routing;
+  document.getElementById('geo-setup').textContent    = info.setup;
+  document.getElementById('geo-machines').textContent = info.machines.join(', ');
+
+  // KPI update
+  document.getElementById('kpi-topscore').textContent  = Math.round(info.confidence * 100) + '%';
+
+  if (matchPart) {
+    var top3 = matchPart.candidates.slice(0,3);
+    document.getElementById('geo-matches').innerHTML = top3.map(function(c,i) {
+      var pct = Math.round(c.score*100);
+      return '<div class="match-card' + (i===0?' top1':'') + '">' +
+        '<div class="flex justify-between items-center mb-6">' +
+          '<span class="font-mono text-xs"><strong>' + c.partId + '</strong></span>' +
+          '<span style="font-family:var(--ff-mono);font-weight:700;color:' + (pct>=85?'var(--success)':pct>=70?'var(--accent)':'var(--warning)') + '">' + pct + '%</span>' +
+        '</div>' +
+        '<div class="match-bar mb-8"><div class="match-bar-fill" style="width:' + pct + '%"></div></div>' +
+        '<div style="display:flex;gap:6px;flex-wrap:wrap">' + c.reasons.map(function(r){ return '<span class="sim-tag">' + r + '</span>'; }).join('') + '</div></div>';
+    }).join('');
+    var setupSav = +(matchPart.historicalSetupH * info.confidence * 0.6).toFixed(1);
+    document.getElementById('kpi-setupsav').textContent = setupSav + 'h';
+    document.getElementById('kpi-cycleconf').textContent = Math.round(info.confidence * 90) + '%';
+
+    // Recs
+    document.getElementById('ss-recs').innerHTML = [
+      { t:'success', i:'✅', h:'Geometry family identified: ' + info.label, b:'Routing family ' + info.routing + ' and setup family ' + info.setup + ' expected. Use ' + info.machines.join('/') + ' for this job family.' },
+      { t:'accent',  i:'📋', h:'Top match for quoting: ' + top3[0].partId, b:'Run history and setup data from ' + top3[0].partId + ' are the best available estimate. Confidence: ' + Math.round(top3[0].score*100) + '%.' },
+      { t:'accent',  i:'🔗', h:'In production: connect to vision classifier', b:'A fine-tuned Gemini Vision or ResNet model trained on your ERP part images would classify with >90% accuracy, replacing this selection step entirely.' }
+    ].map(function(r) {
+      return '<div class="rec-row ' + r.t + '"><div style="font-size:1.1rem;flex-shrink:0">' + r.i + '</div><div><strong>' + r.h + '</strong><br><span class="muted-text">' + r.b + '</span></div></div>';
+    }).join('');
+  }
+}
+
+document.addEventListener('DOMContentLoaded', buildRefBtns);
+</script>
+</body>
+</html>

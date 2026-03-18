@@ -1,0 +1,909 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>Color Sort Puzzle</title>
+  <style>
+    /* ── THEME VARIABLES ─────────────────────────────── */
+    :root {
+      --bg:        #1a1a2e;
+      --surface:   #16213e;
+      --surface2:  #0f3460;
+      --border:    #2a2a4a;
+      --text:      #e0e0ff;
+      --subtext:   #7777aa;
+      --accent:    #4ecca3;
+      --tube-bg:   rgba(255,255,255,0.04);
+      --tube-border: #3a3a6a;
+      --btn-bg:    #16213e;
+      --btn-text:  #aaa;
+      --shadow:    rgba(0,0,0,0.4);
+      --overlay:   rgba(0,0,0,0.88);
+    }
+    [data-theme="light"] {
+      --bg:        #f0f4ff;
+      --surface:   #ffffff;
+      --surface2:  #e0e8ff;
+      --border:    #c0c8e8;
+      --text:      #1a1a3e;
+      --subtext:   #6666aa;
+      --accent:    #2aaa83;
+      --tube-bg:   rgba(0,0,0,0.04);
+      --tube-border: #aab0d8;
+      --btn-bg:    #e0e8ff;
+      --btn-text:  #333;
+      --shadow:    rgba(0,0,0,0.15);
+      --overlay:   rgba(255,255,255,0.92);
+    }
+
+    /* ── RESET & BASE ────────────────────────────────── */
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: background 0.3s, color 0.3s;
+      overflow-x: hidden;
+    }
+
+    /* ── TOP BAR ─────────────────────────────────────── */
+    #top-bar {
+      width: 100%;
+      max-width: 560px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px 0;
+    }
+
+    #top-bar h1 {
+      font-size: 1.4rem;
+      letter-spacing: 4px;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+
+    .icon-btn {
+      background: var(--btn-bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      width: 38px; height: 38px;
+      border-radius: 50%;
+      font-size: 1rem;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.2s, transform 0.1s;
+    }
+    .icon-btn:active { transform: scale(0.92); }
+
+    /* ── SCREENS ─────────────────────────────────────── */
+    .screen {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+      max-width: 560px;
+      padding: 16px 20px 32px;
+    }
+    .screen.active { display: flex; }
+
+    /* ── HOME / DIFFICULTY SELECT ────────────────────── */
+    #screen-home {
+      gap: 20px;
+      padding-top: 40px;
+    }
+
+    #screen-home h2 {
+      font-size: 2.2rem;
+      letter-spacing: 5px;
+      font-weight: 900;
+    }
+
+    #screen-home p {
+      color: var(--subtext);
+      font-size: 0.9rem;
+      letter-spacing: 1px;
+    }
+
+    .diff-cards {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      width: 100%;
+      margin-top: 8px;
+    }
+
+    .diff-card {
+      background: var(--surface);
+      border: 2px solid var(--border);
+      border-radius: 14px;
+      padding: 18px 22px;
+      cursor: pointer;
+      transition: border-color 0.2s, transform 0.15s, box-shadow 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .diff-card:hover, .diff-card.selected {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(78,204,163,0.15);
+    }
+    .diff-card:active { transform: scale(0.98); }
+
+    .diff-icon { font-size: 2rem; }
+
+    .diff-info { flex: 1; }
+    .diff-info h3 { font-size: 1.1rem; margin-bottom: 3px; }
+    .diff-info p  { font-size: 0.78rem; color: var(--subtext); }
+
+    .diff-badge {
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 20px;
+      letter-spacing: 1px;
+    }
+    .badge-easy   { background: #2ecc7133; color: #2ecc71; }
+    .badge-medium { background: #f1c40f33; color: #f1c40f; }
+    .badge-hard   { background: #e74c3c33; color: #e74c3c; }
+
+    #btn-play {
+      margin-top: 8px;
+      width: 100%;
+      padding: 16px;
+      border: none;
+      border-radius: 14px;
+      background: var(--accent);
+      color: #0f2027;
+      font-size: 1.1rem;
+      font-weight: 800;
+      letter-spacing: 3px;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.1s;
+    }
+    #btn-play:active { transform: scale(0.97); }
+
+    #btn-levels-home {
+      width: 100%;
+      padding: 13px;
+      border: 1.5px solid var(--border);
+      border-radius: 14px;
+      background: transparent;
+      color: var(--subtext);
+      font-size: 0.9rem;
+      font-weight: 600;
+      letter-spacing: 2px;
+      cursor: pointer;
+      transition: border-color 0.2s;
+    }
+    #btn-levels-home:hover { border-color: var(--accent); color: var(--text); }
+
+    /* ── LEVEL SELECT ────────────────────────────────── */
+    #screen-levels { gap: 16px; }
+
+    #screen-levels h2 {
+      font-size: 1.3rem;
+      letter-spacing: 3px;
+      margin-top: 8px;
+    }
+
+    .level-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 10px;
+      width: 100%;
+    }
+
+    .level-cell {
+      aspect-ratio: 1;
+      border-radius: 12px;
+      border: 2px solid var(--border);
+      background: var(--surface);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: border-color 0.2s, transform 0.15s;
+      font-weight: 700;
+      font-size: 1rem;
+      position: relative;
+    }
+    .level-cell:hover:not(.locked) { border-color: var(--accent); transform: scale(1.05); }
+    .level-cell.locked { opacity: 0.35; cursor: not-allowed; }
+    .level-cell.completed { border-color: var(--accent); }
+    .level-cell.completed::after {
+      content: '✓';
+      position: absolute;
+      top: 3px; right: 6px;
+      font-size: 0.65rem;
+      color: var(--accent);
+    }
+
+    .level-best {
+      font-size: 0.55rem;
+      color: var(--subtext);
+      margin-top: 2px;
+    }
+
+    #btn-back-home {
+      width: 100%;
+      padding: 13px;
+      border: 1.5px solid var(--border);
+      border-radius: 14px;
+      background: transparent;
+      color: var(--subtext);
+      font-size: 0.9rem;
+      font-weight: 600;
+      letter-spacing: 2px;
+      cursor: pointer;
+    }
+
+    /* ── GAME SCREEN ─────────────────────────────────── */
+    #screen-game { gap: 0; padding-top: 12px; }
+
+    #game-meta {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 4px;
+      margin-bottom: 20px;
+    }
+
+    .meta-pill {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 6px 14px;
+      font-size: 0.78rem;
+      letter-spacing: 1px;
+      color: var(--subtext);
+    }
+    .meta-pill span { color: var(--text); font-weight: 700; }
+
+    /* ── TUBES ───────────────────────────────────────── */
+    #game-board {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 14px;
+      width: 100%;
+      padding: 8px 4px;
+    }
+
+    .tube-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      cursor: pointer;
+      position: relative;
+    }
+
+    /* Open top rim */
+    .tube-top {
+      width: 46px;
+      height: 10px;
+      border-left: 3px solid var(--tube-border);
+      border-right: 3px solid var(--tube-border);
+      background: transparent;
+      transition: border-color 0.15s;
+    }
+
+    .tube {
+      width: 46px;
+      height: 160px;
+      border: 3px solid var(--tube-border);
+      border-top: none;
+      border-radius: 0 0 23px 23px;
+      display: flex;
+      flex-direction: column-reverse;
+      overflow: hidden;
+      background: var(--tube-bg);
+      transition: border-color 0.15s;
+      position: relative;
+    }
+
+    .tube-wrapper.selected .tube,
+    .tube-wrapper.selected .tube-top {
+      border-color: #ffffff;
+    }
+    [data-theme="light"] .tube-wrapper.selected .tube,
+    [data-theme="light"] .tube-wrapper.selected .tube-top {
+      border-color: #1a1a3e;
+    }
+
+    .tube-wrapper.selected {
+      transform: translateY(-14px);
+      transition: transform 0.18s ease;
+    }
+    .tube-wrapper:not(.selected) {
+      transform: translateY(0);
+      transition: transform 0.18s ease;
+    }
+
+    .tube-wrapper.valid-target .tube,
+    .tube-wrapper.valid-target .tube-top {
+      border-color: var(--accent);
+    }
+
+    .block {
+      width: 100%;
+      height: 38px;
+      flex-shrink: 0;
+      transition: opacity 0.15s;
+    }
+
+    /* Pour animation */
+    @keyframes pour-in {
+      0%   { transform: scaleY(0); opacity: 0; }
+      60%  { transform: scaleY(1.1); }
+      100% { transform: scaleY(1); opacity: 1; }
+    }
+    .block.pour-anim {
+      animation: pour-in 0.22s ease forwards;
+      transform-origin: top;
+    }
+
+    /* ── GAME BUTTONS ────────────────────────────────── */
+    #game-buttons {
+      display: flex;
+      gap: 10px;
+      margin-top: 28px;
+      width: 100%;
+      justify-content: center;
+    }
+
+    .game-btn {
+      padding: 10px 22px;
+      border-radius: 10px;
+      border: 1.5px solid var(--border);
+      background: var(--btn-bg);
+      color: var(--btn-text);
+      font-size: 0.85rem;
+      font-weight: 600;
+      letter-spacing: 1px;
+      cursor: pointer;
+      transition: border-color 0.2s, transform 0.1s;
+    }
+    .game-btn:hover { border-color: var(--accent); }
+    .game-btn:active { transform: scale(0.95); }
+
+    #btn-back-game {
+      padding: 10px 16px;
+      border-radius: 10px;
+      border: 1.5px solid var(--border);
+      background: transparent;
+      color: var(--subtext);
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: border-color 0.2s;
+    }
+
+    /* ── WIN OVERLAY ─────────────────────────────────── */
+    #win-screen {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: var(--overlay);
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      z-index: 200;
+    }
+    #win-screen.show { display: flex; }
+
+    #win-screen .win-emoji { font-size: 3.5rem; }
+
+    #win-screen h2 {
+      font-size: 2rem;
+      letter-spacing: 5px;
+      color: var(--accent);
+    }
+
+    .win-stats {
+      display: flex;
+      gap: 24px;
+    }
+
+    .win-stat {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px 20px;
+      text-align: center;
+    }
+    .win-stat .stat-val { font-size: 1.4rem; font-weight: 800; color: var(--accent); }
+    .win-stat .stat-label { font-size: 0.7rem; color: var(--subtext); letter-spacing: 1px; }
+
+    .win-buttons { display: flex; gap: 10px; margin-top: 8px; }
+
+    #btn-next {
+      padding: 14px 32px;
+      border: none;
+      border-radius: 12px;
+      background: var(--accent);
+      color: #0f2027;
+      font-size: 1rem;
+      font-weight: 800;
+      letter-spacing: 2px;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    #btn-next:hover { opacity: 0.85; }
+
+    #btn-retry {
+      padding: 14px 20px;
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      background: transparent;
+      color: var(--subtext);
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    /* ── DIFF INDICATOR IN GAME ──────────────────────── */
+    .diff-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      display: inline-block;
+      margin-right: 5px;
+    }
+    .dot-easy   { background: #2ecc71; }
+    .dot-medium { background: #f1c40f; }
+    .dot-hard   { background: #e74c3c; }
+
+    /* ── RESPONSIVE ──────────────────────────────────── */
+    @media (max-width: 400px) {
+      .tube { width: 40px; height: 144px; }
+      .tube-top { width: 40px; }
+      .block { height: 34px; }
+      #game-board { gap: 10px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- TOP BAR (always visible) -->
+  <div id="top-bar">
+    <h1>Color Sort</h1>
+    <div style="display:flex;gap:8px;">
+      <button class="icon-btn" id="btn-theme" title="Toggle theme">🌙</button>
+    </div>
+  </div>
+
+  <!-- ── SCREEN: HOME ── -->
+  <div class="screen active" id="screen-home">
+    <h2>COLOR SORT</h2>
+    <p>SELECT DIFFICULTY</p>
+
+    <div class="diff-cards">
+      <div class="diff-card selected" data-diff="easy">
+        <div class="diff-icon">🟢</div>
+        <div class="diff-info">
+          <h3>Easy</h3>
+          <p>3–4 colors · 2 empty tubes · Perfect for beginners</p>
+        </div>
+        <span class="diff-badge badge-easy">EASY</span>
+      </div>
+      <div class="diff-card" data-diff="medium">
+        <div class="diff-icon">🟡</div>
+        <div class="diff-info">
+          <h3>Medium</h3>
+          <p>5–6 colors · 1 empty tube · Needs planning</p>
+        </div>
+        <span class="diff-badge badge-medium">MEDIUM</span>
+      </div>
+      <div class="diff-card" data-diff="hard">
+        <div class="diff-icon">🔴</div>
+        <div class="diff-info">
+          <h3>Hard</h3>
+          <p>7–8 colors · 1 empty tube · Real challenge</p>
+        </div>
+        <span class="diff-badge badge-hard">HARD</span>
+      </div>
+    </div>
+
+    <button id="btn-play">▶ PLAY</button>
+    <button id="btn-levels-home">SELECT LEVEL</button>
+  </div>
+
+  <!-- ── SCREEN: LEVEL SELECT ── -->
+  <div class="screen" id="screen-levels">
+    <h2>SELECT LEVEL</h2>
+    <div class="level-grid" id="level-grid"></div>
+    <button id="btn-back-home">← BACK</button>
+  </div>
+
+  <!-- ── SCREEN: GAME ── -->
+  <div class="screen" id="screen-game">
+    <div id="game-meta">
+      <div class="meta-pill">LV <span id="meta-level">1</span></div>
+      <div class="meta-pill">
+        <span class="diff-dot" id="diff-dot"></span><span id="meta-diff">EASY</span>
+      </div>
+      <div class="meta-pill">MOVES <span id="meta-moves">0</span></div>
+      <div class="meta-pill">BEST <span id="meta-best">–</span></div>
+    </div>
+
+    <div id="game-board"></div>
+
+    <div id="game-buttons">
+      <button id="btn-back-game">⬅</button>
+      <button class="game-btn" id="btn-undo">↩ UNDO</button>
+      <button class="game-btn" id="btn-restart">↺ RESTART</button>
+    </div>
+  </div>
+
+  <!-- ── WIN OVERLAY ── -->
+  <div id="win-screen">
+    <div class="win-emoji">🎉</div>
+    <h2>SOLVED!</h2>
+    <div class="win-stats">
+      <div class="win-stat">
+        <div class="stat-val" id="win-moves">0</div>
+        <div class="stat-label">MOVES</div>
+      </div>
+      <div class="win-stat">
+        <div class="stat-val" id="win-best">–</div>
+        <div class="stat-label">BEST</div>
+      </div>
+    </div>
+    <div class="win-buttons">
+      <button id="btn-retry">↺ RETRY</button>
+      <button id="btn-next">NEXT →</button>
+    </div>
+  </div>
+
+<script>
+// ── AUDIO (Web Audio API — no files needed) ──────────────
+const AC = new (window.AudioContext || window.webkitAudioContext)();
+
+function playTone(freq, type='sine', dur=0.08, vol=0.18) {
+  try {
+    const o = AC.createOscillator();
+    const g = AC.createGain();
+    o.connect(g); g.connect(AC.destination);
+    o.type = type; o.frequency.value = freq;
+    g.gain.setValueAtTime(vol, AC.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, AC.currentTime + dur);
+    o.start(); o.stop(AC.currentTime + dur);
+  } catch(e) {}
+}
+
+function sfxSelect()  { playTone(520, 'sine', 0.07, 0.12); }
+function sfxPour()    { playTone(440, 'triangle', 0.12, 0.15); playTone(480, 'triangle', 0.1, 0.1); }
+function sfxError()   { playTone(220, 'sawtooth', 0.1, 0.12); }
+function sfxWin()     {
+  [523,659,784,1047].forEach((f,i) =>
+    setTimeout(() => playTone(f, 'sine', 0.18, 0.2), i * 120));
+}
+
+// Resume AudioContext on first interaction
+document.addEventListener('click', () => { if(AC.state === 'suspended') AC.resume(); }, { once: true });
+
+// ── COLORS ───────────────────────────────────────────────
+const COLORS = {
+  red:    '#e74c3c', blue:   '#3498db', green:  '#2ecc71',
+  yellow: '#f1c40f', purple: '#9b59b6', orange: '#e67e22',
+  pink:   '#e91e8c', teal:   '#1abc9c',
+};
+const COLOR_KEYS = Object.keys(COLORS);
+
+// ── DIFFICULTY CONFIGS ────────────────────────────────────
+const DIFF = {
+  easy:   { label: 'EASY',   dot: 'dot-easy',   levels: 20, configs: [
+    { colors:3,tubeSize:4,extra:2 },{ colors:3,tubeSize:4,extra:2 },
+    { colors:4,tubeSize:4,extra:2 },{ colors:4,tubeSize:4,extra:2 },
+    { colors:4,tubeSize:4,extra:2 },{ colors:4,tubeSize:4,extra:2 },
+    { colors:4,tubeSize:4,extra:2 },{ colors:4,tubeSize:4,extra:2 },
+  ]},
+  medium: { label: 'MEDIUM', dot: 'dot-medium', levels: 20, configs: [
+    { colors:4,tubeSize:4,extra:1 },{ colors:5,tubeSize:4,extra:1 },
+    { colors:5,tubeSize:4,extra:1 },{ colors:6,tubeSize:4,extra:1 },
+    { colors:6,tubeSize:4,extra:1 },{ colors:6,tubeSize:4,extra:1 },
+  ]},
+  hard:   { label: 'HARD',   dot: 'dot-hard',   levels: 20, configs: [
+    { colors:6,tubeSize:4,extra:1 },{ colors:7,tubeSize:4,extra:1 },
+    { colors:7,tubeSize:4,extra:1 },{ colors:8,tubeSize:4,extra:1 },
+    { colors:8,tubeSize:4,extra:1 },{ colors:8,tubeSize:4,extra:1 },
+  ]},
+};
+
+// ── STATE ─────────────────────────────────────────────────
+let difficulty   = 'easy';
+let currentLevel = 1;
+let tubes        = [];
+let TUBE_SIZE    = 4;
+let selectedIdx  = null;
+let moves        = 0;
+let history      = [];
+
+// ── STORAGE ───────────────────────────────────────────────
+function storageKey(diff, lvl) { return `cs_${diff}_${lvl}`; }
+
+function getBest(diff, lvl) {
+  return parseInt(localStorage.getItem(storageKey(diff, lvl))) || null;
+}
+
+function setBest(diff, lvl, val) {
+  const cur = getBest(diff, lvl);
+  if (!cur || val < cur) localStorage.setItem(storageKey(diff, lvl), val);
+}
+
+function isUnlocked(diff, lvl) {
+  if (lvl === 1) return true;
+  return getBest(diff, lvl - 1) !== null;
+}
+
+// ── THEME ─────────────────────────────────────────────────
+let theme = localStorage.getItem('cs_theme') || 'dark';
+applyTheme(theme);
+
+function applyTheme(t) {
+  theme = t;
+  document.documentElement.setAttribute('data-theme', t);
+  document.getElementById('btn-theme').textContent = t === 'dark' ? '🌙' : '☀️';
+  localStorage.setItem('cs_theme', t);
+}
+
+document.getElementById('btn-theme').addEventListener('click', () => {
+  applyTheme(theme === 'dark' ? 'light' : 'dark');
+});
+
+// ── SCREEN NAVIGATION ─────────────────────────────────────
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+// ── DIFFICULTY SELECTION ──────────────────────────────────
+document.querySelectorAll('.diff-card').forEach(card => {
+  card.addEventListener('click', () => {
+    document.querySelectorAll('.diff-card').forEach(c => c.classList.remove('selected'));
+    card.classList.add('selected');
+    difficulty = card.dataset.diff;
+    sfxSelect();
+  });
+});
+
+document.getElementById('btn-play').addEventListener('click', () => {
+  currentLevel = 1;
+  startLevel(currentLevel);
+});
+
+// ── LEVEL SELECT ──────────────────────────────────────────
+document.getElementById('btn-levels-home').addEventListener('click', () => {
+  renderLevelGrid();
+  showScreen('screen-levels');
+});
+
+document.getElementById('btn-back-home').addEventListener('click', () => {
+  showScreen('screen-home');
+});
+
+function renderLevelGrid() {
+  const grid = document.getElementById('level-grid');
+  grid.innerHTML = '';
+  const total = DIFF[difficulty].levels;
+
+  for (let i = 1; i <= total; i++) {
+    const cell = document.createElement('div');
+    cell.className = 'level-cell';
+    const unlocked = isUnlocked(difficulty, i);
+    const best     = getBest(difficulty, i);
+
+    if (!unlocked) cell.classList.add('locked');
+    if (best)      cell.classList.add('completed');
+
+    cell.innerHTML = `
+      ${unlocked ? i : '🔒'}
+      ${best ? `<div class="level-best">⭐ ${best}</div>` : ''}
+    `;
+
+    if (unlocked) {
+      cell.addEventListener('click', () => {
+        sfxSelect();
+        currentLevel = i;
+        startLevel(i);
+      });
+    }
+    grid.appendChild(cell);
+  }
+}
+
+// ── LEVEL GENERATION ──────────────────────────────────────
+function getLevelConfig(lvl) {
+  const cfgs = DIFF[difficulty].configs;
+  return cfgs[Math.min(lvl - 1, cfgs.length - 1)];
+}
+
+function generateLevel(lvl) {
+  const cfg = getLevelConfig(lvl);
+  const { colors, tubeSize, extra } = cfg;
+  let all = [];
+  for (let i = 0; i < colors; i++)
+    for (let j = 0; j < tubeSize; j++)
+      all.push(COLOR_KEYS[i]);
+  all = shuffle(all);
+  const result = [];
+  for (let i = 0; i < colors; i++)
+    result.push(all.slice(i * tubeSize, (i + 1) * tubeSize));
+  for (let i = 0; i < extra; i++)
+    result.push([]);
+  return { tubes: result, tubeSize };
+}
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+// ── START LEVEL ───────────────────────────────────────────
+function startLevel(lvl) {
+  const gen = generateLevel(lvl);
+  tubes      = gen.tubes;
+  TUBE_SIZE  = gen.tubeSize;
+  selectedIdx = null;
+  moves       = 0;
+  history     = [];
+
+  const d = DIFF[difficulty];
+  document.getElementById('meta-level').textContent = lvl;
+  document.getElementById('meta-diff').textContent  = d.label;
+  document.getElementById('diff-dot').className     = `diff-dot ${d.dot}`;
+  document.getElementById('meta-moves').textContent = 0;
+
+  const best = getBest(difficulty, lvl);
+  document.getElementById('meta-best').textContent = best || '–';
+
+  document.getElementById('win-screen').classList.remove('show');
+  showScreen('screen-game');
+  render();
+}
+
+// ── LOGIC ─────────────────────────────────────────────────
+function topColor(tube) { return tube.length ? tube[tube.length - 1] : null; }
+
+function canPour(from, to) {
+  if (!from.length)           return false;
+  if (to.length >= TUBE_SIZE) return false;
+  if (!to.length)             return true;
+  return topColor(from) === topColor(to);
+}
+
+function pour(fromIdx, toIdx) {
+  const from = tubes[fromIdx], to = tubes[toIdx];
+  if (!canPour(from, to)) return false;
+  history.push(tubes.map(t => [...t]));
+  const color = topColor(from);
+  while (from.length && topColor(from) === color && to.length < TUBE_SIZE)
+    to.push(from.pop());
+  moves++;
+  document.getElementById('meta-moves').textContent = moves;
+  return true;
+}
+
+function isSolved(tube) {
+  if (!tube.length) return true;
+  if (tube.length !== TUBE_SIZE) return false;
+  return tube.every(c => c === tube[0]);
+}
+
+function checkWin() { return tubes.every(isSolved); }
+
+// ── RENDER ────────────────────────────────────────────────
+function render(animToIdx = null) {
+  const board = document.getElementById('game-board');
+  board.innerHTML = '';
+
+  tubes.forEach((tube, idx) => {
+    const wrapper = document.createElement('div');
+    wrapper.className = 'tube-wrapper';
+    if (idx === selectedIdx)                                        wrapper.classList.add('selected');
+    else if (selectedIdx !== null && canPour(tubes[selectedIdx], tube)) wrapper.classList.add('valid-target');
+
+    // Open top rim
+    const top = document.createElement('div');
+    top.className = 'tube-top';
+    wrapper.appendChild(top);
+
+    // Tube body
+    const tubeEl = document.createElement('div');
+    tubeEl.className = 'tube';
+
+    tube.forEach((color, bi) => {
+      const block = document.createElement('div');
+      block.className = 'block';
+      if (idx === animToIdx && bi >= tube.length - 1) block.classList.add('pour-anim');
+      block.style.background = COLORS[color];
+      tubeEl.appendChild(block);
+    });
+
+    wrapper.appendChild(tubeEl);
+    wrapper.addEventListener('click', () => handleClick(idx));
+    board.appendChild(wrapper);
+  });
+}
+
+// ── INPUT ─────────────────────────────────────────────────
+function handleClick(idx) {
+  if (selectedIdx === null) {
+    if (tubes[idx].length) { selectedIdx = idx; sfxSelect(); render(); }
+  } else if (idx === selectedIdx) {
+    selectedIdx = null; render();
+  } else if (canPour(tubes[selectedIdx], tubes[idx])) {
+    const toIdx = idx;
+    pour(selectedIdx, toIdx);
+    selectedIdx = null;
+    sfxPour();
+    render(toIdx);
+    if (checkWin()) setTimeout(showWin, 350);
+  } else {
+    sfxError();
+    if (tubes[idx].length) { selectedIdx = idx; render(); }
+    else { selectedIdx = null; render(); }
+  }
+}
+
+// ── WIN ───────────────────────────────────────────────────
+function showWin() {
+  setBest(difficulty, currentLevel, moves);
+  const best = getBest(difficulty, currentLevel);
+  document.getElementById('win-moves').textContent = moves;
+  document.getElementById('win-best').textContent  = best || moves;
+  document.getElementById('win-screen').classList.add('show');
+  sfxWin();
+}
+
+// ── BUTTONS ───────────────────────────────────────────────
+document.getElementById('btn-undo').addEventListener('click', () => {
+  if (!history.length) return;
+  tubes = history.pop();
+  moves = Math.max(0, moves - 1);
+  selectedIdx = null;
+  document.getElementById('meta-moves').textContent = moves;
+  sfxSelect();
+  render();
+});
+
+document.getElementById('btn-restart').addEventListener('click', () => {
+  sfxSelect();
+  startLevel(currentLevel);
+});
+
+document.getElementById('btn-back-game').addEventListener('click', () => {
+  selectedIdx = null;
+  showScreen('screen-home');
+});
+
+document.getElementById('btn-next').addEventListener('click', () => {
+  document.getElementById('win-screen').classList.remove('show');
+  const maxLevels = DIFF[difficulty].levels;
+  if (currentLevel < maxLevels) {
+    currentLevel++;
+    startLevel(currentLevel);
+  } else {
+    showScreen('screen-home');
+  }
+});
+
+document.getElementById('btn-retry').addEventListener('click', () => {
+  document.getElementById('win-screen').classList.remove('show');
+  startLevel(currentLevel);
+});
+</script>
+</body>
+</html>

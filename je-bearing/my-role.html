@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>My Role — OI Platform</title>
+  <link rel="stylesheet" href="css/main.css"/>
+</head>
+<body>
+<script src="js/data.js"></script>
+<script src="js/nav.js"></script>
+
+<div class="page-header">
+  <div class="container">
+    <div class="kicker">Personal Contribution</div>
+    <h1 class="h-display mb-16">What I personally built</h1>
+    <p>A detailed account of my specific contributions, the skills demonstrated, and the thinking behind each design decision — written for serious viewers who want to understand what I can actually do.</p>
+  </div>
+</div>
+
+<!-- ── Contributions ───────────────────────────────────── -->
+<section>
+  <div class="container">
+    <div class="kicker">First-Person Contributions</div>
+    <h2 class="h-section mb-48">What I did, specifically</h2>
+
+    <div class="flex-col gap-32">
+
+      <div class="card card-lg">
+        <div class="flex gap-20">
+          <div style="width:56px;height:56px;border-radius:var(--r);background:rgba(56,189,248,0.1);border:1px solid rgba(56,189,248,0.2);display:flex;align-items:center;justify-content:center;font-size:1.5rem;flex-shrink:0">🎯</div>
+          <div>
+            <h3 class="h-card mb-12">Problem Framing</h3>
+            <p style="color:var(--muted);line-height:1.8;margin-bottom:16px">I reframed the shop scheduling challenge from a pure scheduling optimization problem into a <strong style="color:var(--text)">decision-support problem</strong>. This distinction matters enormously. A scheduling optimizer would try to produce an optimal schedule. A decision-support system produces visible trade-offs that a human expert can evaluate with full context.</p>
+            <p style="color:var(--muted);line-height:1.8">I identified that the weekly planning meeting — not the ERP system — was the shop's real optimization engine. The work was to support that meeting with better information, not to automate it away. This framing shaped every downstream design decision.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="card card-lg">
+        <div class="flex gap-20">
+          <div style="width:56px;height:56px;border-radius:var(--r);background:rgba(56,189,248,0.1);border:1px solid rgba(56,189,248,0.2);display:flex;align-items:center;justify-content:center;font-size:1.5rem;flex-shrink:0">🗄️</div>
+          <div>
+            <h3 class="h-card mb-12">Canonical Data Modeling (Module 0)</h3>
+            <p style="color:var(--muted);line-height:1.8;margin-bottom:16px">I designed the canonical data structure for all six core entity types: operators, machines, jobs, routings, parameters, and constraints. For each entity, I defined which attributes were necessary for decision support (not just data recording), what the canonical completeness criteria were, and how the entities related to each other.</p>
+            <p style="color:var(--muted);line-height:1.8">This included translating verbal rules — "Joe prefers VMC1 because it holds tighter tolerances" — into explicit, queryable fields like <span class="font-mono text-sm" style="color:var(--accent)">preferredMachines</span>, <span class="font-mono text-sm" style="color:var(--accent)">precisionClass</span>, and <span class="font-mono text-sm" style="color:var(--accent)">certifiedMachines</span>.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="card card-lg">
+        <div class="flex gap-20">
+          <div style="width:56px;height:56px;border-radius:var(--r);background:rgba(56,189,248,0.1);border:1px solid rgba(56,189,248,0.2);display:flex;align-items:center;justify-content:center;font-size:1.5rem;flex-shrink:0">📊</div>
+          <div>
+            <h3 class="h-card mb-12">Weekly Review Logic (Module 1)</h3>
+            <p style="color:var(--muted);line-height:1.8;margin-bottom:16px">I built the weekly review logic around real human constraints — not theoretical optimization. The job risk scoring formula, operator load scoring, and scenario generation logic were all designed to mirror how an experienced planner actually thinks: "What must ship? Who's overloaded? Where can I save a setup?"</p>
+            <p style="color:var(--muted);line-height:1.8;margin-bottom:16px">I designed four scenarios (Min Setups, Min Inventory, Max On-Time, Operator-Friendly) to reflect the actual strategic trade-offs that arise in a HMLV shop week-to-week. Each scenario is not just a label — it has specific optimization biases that produce meaningfully different outputs.</p>
+            <p style="color:var(--muted);line-height:1.8">The decision flags panel was designed to surface actionable recommendations, not just data. The system should tell the planner what decision to make, not just what the data says.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="card card-lg">
+        <div class="flex gap-20">
+          <div style="width:56px;height:56px;border-radius:var(--r);background:rgba(56,189,248,0.1);border:1px solid rgba(56,189,248,0.2);display:flex;align-items:center;justify-content:center;font-size:1.5rem;flex-shrink:0">🔍</div>
+          <div>
+            <h3 class="h-card mb-12">Same/Similar Part Intelligence</h3>
+            <p style="color:var(--muted);line-height:1.8;margin-bottom:16px">I developed the same/similar part intelligence concept as a two-layer system: structured ERP attribute matching, and geometry/image-assisted similarity. The structured layer uses a weighted similarity formula across material, setup family, routing family, machine family, tolerance, geometry, and run history. I defined the weightings based on which attributes most strongly predict setup reusability.</p>
+            <p style="color:var(--muted);line-height:1.8">The geometry layer is a product concept for how a Gemini Vision or fine-tuned classifier could eventually classify part images and extend the matching to shops without well-structured ERP data. I designed the workflow and user experience — including the mock output format, confidence bands, and savings estimation logic.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="card card-lg">
+        <div class="flex gap-20">
+          <div style="width:56px;height:56px;border-radius:var(--r);background:rgba(56,189,248,0.1);border:1px solid rgba(56,189,248,0.2);display:flex;align-items:center;justify-content:center;font-size:1.5rem;flex-shrink:0">🎨</div>
+          <div>
+            <h3 class="h-card mb-12">Interface and Portfolio Design</h3>
+            <p style="color:var(--muted);line-height:1.8;margin-bottom:16px">I designed the interface logic for how users would interact with the system — what controls matter, what outputs to surface, what the information hierarchy should be. The goal was not a generic dashboard, but a product-grade tool that feels purposeful and credible to an operations audience.</p>
+            <p style="color:var(--muted);line-height:1.8">This portfolio site is itself a design artifact — it demonstrates not just what I built but how I think about presenting technical work to a non-technical business audience.</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ── Skills Map ──────────────────────────────────────── -->
+<section style="background:var(--surface)">
+  <div class="container">
+    <div class="kicker">Skills Demonstrated</div>
+    <h2 class="h-section mb-40">What this project proves</h2>
+    <div class="grid-3 gap-20">
+      <div class="card card-lg">
+        <div class="kicker" style="margin-bottom:16px">Operations Strategy</div>
+        <div class="flex-col gap-8">
+          <div class="flex gap-10 items-center"><span class="badge badge-success badge-dot">Strong</span><span class="text-sm">HMLV manufacturing operating models</span></div>
+          <div class="flex gap-10 items-center"><span class="badge badge-success badge-dot">Strong</span><span class="text-sm">Constraint identification and framing</span></div>
+          <div class="flex gap-10 items-center"><span class="badge badge-success badge-dot">Strong</span><span class="text-sm">Decision economics (setup vs inventory trade-offs)</span></div>
+          <div class="flex gap-10 items-center"><span class="badge badge-accent badge-dot">Good</span><span class="text-sm">Lean / process improvement thinking</span></div>
+        </div>
+      </div>
+      <div class="card card-lg">
+        <div class="kicker" style="margin-bottom:16px">Workflow & System Design</div>
+        <div class="flex-col gap-8">
+          <div class="flex gap-10 items-center"><span class="badge badge-success badge-dot">Strong</span><span class="text-sm">Decision-support workflow design</span></div>
+          <div class="flex gap-10 items-center"><span class="badge badge-success badge-dot">Strong</span><span class="text-sm">Entity and relationship modeling</span></div>
+          <div class="flex gap-10 items-center"><span class="badge badge-success badge-dot">Strong</span><span class="text-sm">Human-in-the-loop system architecture</span></div>
+          <div class="flex gap-10 items-center"><span class="badge badge-accent badge-dot">Good</span><span class="text-sm">Rules registry and parameter design</span></div>
+        </div>
+      </div>
+      <div class="card card-lg">
+        <div class="kicker" style="margin-bottom:16px">AI Product Thinking</div>
+        <div class="flex-col gap-8">
+          <div class="flex gap-10 items-center"><span class="badge badge-success badge-dot">Strong</span><span class="text-sm">Knowing when NOT to automate</span></div>
+          <div class="flex gap-10 items-center"><span class="badge badge-success badge-dot">Strong</span><span class="text-sm">Multimodal workflow concept (image similarity)</span></div>
+          <div class="flex gap-10 items-center"><span class="badge badge-success badge-dot">Strong</span><span class="text-sm">Deterministic simulation as AI scaffold</span></div>
+          <div class="flex gap-10 items-center"><span class="badge badge-accent badge-dot">Good</span><span class="text-sm">LLM product design and prototyping</span></div>
+        </div>
+      </div>
+      <div class="card card-lg">
+        <div class="kicker" style="margin-bottom:16px">Data Modeling</div>
+        <div class="flex-col gap-8">
+          <div class="flex gap-10 items-center"><span class="badge badge-success badge-dot">Strong</span><span class="text-sm">Canonical object design</span></div>
+          <div class="flex gap-10 items-center"><span class="badge badge-success badge-dot">Strong</span><span class="text-sm">Operational data structuring</span></div>
+          <div class="flex gap-10 items-center"><span class="badge badge-success badge-dot">Strong</span><span class="text-sm">Weighted scoring and similarity formulas</span></div>
+          <div class="flex gap-10 items-center"><span class="badge badge-accent badge-dot">Good</span><span class="text-sm">Scenario simulation design</span></div>
+        </div>
+      </div>
+      <div class="card card-lg">
+        <div class="kicker" style="margin-bottom:16px">Interface & UX Design</div>
+        <div class="flex-col gap-8">
+          <div class="flex gap-10 items-center"><span class="badge badge-success badge-dot">Strong</span><span class="text-sm">Decision-support interface design</span></div>
+          <div class="flex gap-10 items-center"><span class="badge badge-success badge-dot">Strong</span><span class="text-sm">Information hierarchy for complex domains</span></div>
+          <div class="flex gap-10 items-center"><span class="badge badge-success badge-dot">Strong</span><span class="text-sm">Dashboard and analytical UI patterns</span></div>
+          <div class="flex gap-10 items-center"><span class="badge badge-accent badge-dot">Good</span><span class="text-sm">Industrial / B2B product aesthetics</span></div>
+        </div>
+      </div>
+      <div class="card card-lg">
+        <div class="kicker" style="margin-bottom:16px">Stakeholder Translation</div>
+        <div class="flex-col gap-8">
+          <div class="flex gap-10 items-center"><span class="badge badge-success badge-dot">Strong</span><span class="text-sm">Turning tacit knowledge into structure</span></div>
+          <div class="flex gap-10 items-center"><span class="badge badge-success badge-dot">Strong</span><span class="text-sm">Technical-to-business communication</span></div>
+          <div class="flex gap-10 items-center"><span class="badge badge-success badge-dot">Strong</span><span class="text-sm">Presenting trade-offs to non-technical audiences</span></div>
+          <div class="flex gap-10 items-center"><span class="badge badge-accent badge-dot">Good</span><span class="text-sm">Shop-floor context to product requirements</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section style="text-align:center">
+  <div class="container">
+    <h2 class="h-section mb-16">Explore the architecture</h2>
+    <p class="muted-text mb-40" style="max-width:480px;margin-left:auto;margin-right:auto">The Appendix contains the full workflow map, data schema, rules registry, and simulation assumptions for serious technical viewers.</p>
+    <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap">
+      <a href="appendix.html" class="btn btn-outline btn-lg">View Appendix →</a>
+      <a href="index.html"    class="btn btn-ghost btn-lg">Back to Home</a>
+    </div>
+  </div>
+</section>
+</body>
+</html>
