@@ -98,13 +98,22 @@
     .nav-links a:hover,#nav.scrolled .nav-links a:hover{color:var(--gold)}
     .nav-cta{
       font-size:0.7rem;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;
-      color:var(--white);border:1px solid rgba(255,255,255,0.25);padding:9px 22px;
-      border-radius:9999px;transition:all 0.3s;
-      backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
-      background:rgba(255,255,255,0.06)
+      color:var(--white);padding:9px 22px;border-radius:9999px;transition:all 0.3s;
+      background:rgba(255,255,255,0.11);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
+      box-shadow:inset 0 1px 0 rgba(255,255,255,0.28),0 2px 8px rgba(0,0,0,0.12);
+      border:none;position:relative;overflow:hidden
     }
-    #nav.scrolled .nav-cta{color:var(--navy);border-color:var(--navy-10);background:transparent;backdrop-filter:none}
-    .nav-cta:hover{background:var(--gold)!important;color:var(--navy)!important;border-color:var(--gold)!important}
+    .nav-cta::before{
+      content:'';position:absolute;bottom:4px;left:8px;
+      width:36%;height:1.5px;border-radius:9999px;pointer-events:none;z-index:2;
+      background:linear-gradient(90deg,#ff3a3a,#ff9500,#ffe600,#00d068,#007aff,#9b59ff);
+      opacity:0.45;filter:blur(0.3px)
+    }
+    #nav.scrolled .nav-cta{
+      background:rgba(255,255,255,0.88);color:var(--navy);
+      box-shadow:inset 0 1px 0 rgba(255,255,255,1),0 1px 6px rgba(11,31,59,0.1)
+    }
+    .nav-cta:hover{background:var(--gold)!important;color:var(--navy)!important;box-shadow:0 4px 16px rgba(201,166,75,0.4)!important}
 
     /* NAV PILL */
     .nav-pill{border-radius:9999px;padding:5px 8px}
@@ -125,15 +134,8 @@
 
     /* HERO */
     #hero{background:var(--navy);min-height:100vh;display:flex;flex-direction:column;justify-content:center;position:relative;overflow:hidden;padding-top:100px}
-    .hero-video{position:absolute;inset:0;z-index:0;overflow:hidden;pointer-events:none}
-    .hero-video iframe{
-      position:absolute;top:50%;left:50%;
-      width:177.78vh;height:56.25vw;
-      min-width:100%;min-height:100%;
-      transform:translate(-50%,-50%);
-      pointer-events:none
-    }
-    .hero-video-overlay{position:absolute;inset:0;background:rgba(4,12,30,0.62);z-index:1}
+    .hero-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0}
+    .hero-video-overlay{position:absolute;inset:0;background:rgba(4,12,30,0.55);z-index:1}
     .map-grid{position:absolute;inset:0;z-index:2;background-image:linear-gradient(rgba(201,166,75,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(201,166,75,0.04) 1px,transparent 1px);background-size:80px 80px;pointer-events:none}
     .map-grid::after{content:'';position:absolute;inset:0;background-image:repeating-linear-gradient(45deg,rgba(201,166,75,0.02) 0px,rgba(201,166,75,0.02) 1px,transparent 1px,transparent 70px);pointer-events:none}
 
@@ -160,29 +162,53 @@
     .hero-sub{font-size:clamp(1rem,1.5vw,1.12rem);line-height:1.75;color:rgba(255,255,255,0.55);max-width:520px;margin-bottom:44px;opacity:0;animation:fadeUp 0.9s 0.8s var(--ease) forwards}
     .hero-actions{display:flex;gap:16px;flex-wrap:wrap;opacity:0;animation:fadeUp 0.9s 1s var(--ease) forwards}
 
-    /* BUTTONS — unified pill system */
+    /* BUTTONS — glass prism system */
     .btn-primary,.btn-ghost,.btn-outline,.btn-outline-gold{
       display:inline-flex;align-items:center;gap:8px;
       font-size:0.72rem;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;
-      padding:13px 28px;border-radius:9999px;transition:all 0.3s var(--ease);
-      position:relative;overflow:hidden
+      padding:14px 32px;border-radius:9999px;transition:all 0.3s var(--ease);
+      position:relative;overflow:hidden;border:none;cursor:none
     }
-    .btn-primary{background:var(--gold);color:var(--navy);border:1px solid var(--gold)}
-    .btn-primary:hover{background:var(--gold-light);transform:translateY(-2px);box-shadow:0 8px 24px rgba(201,166,75,0.4)}
+    /* prismatic light streak — glass refracting light */
+    .btn-primary::before,.btn-ghost::before,.btn-outline::before,.btn-outline-gold::before{
+      content:'';position:absolute;bottom:6px;left:10px;
+      width:38%;height:2px;border-radius:9999px;pointer-events:none;z-index:2;
+      background:linear-gradient(90deg,#ff3a3a,#ff9500,#ffe600,#00d068,#007aff,#9b59ff);
+      opacity:0.55;filter:blur(0.4px);
+      transition:opacity 0.3s,width 0.3s
+    }
+    .btn-primary:hover::before,.btn-ghost:hover::before,.btn-outline:hover::before,.btn-outline-gold:hover::before{
+      opacity:0.9;width:54%
+    }
+    /* gold primary */
+    .btn-primary{
+      background:var(--gold);color:var(--navy);
+      box-shadow:inset 0 1px 0 rgba(255,255,255,0.45),inset 0 -1px 0 rgba(0,0,0,0.08),0 4px 16px rgba(201,166,75,0.32)
+    }
+    .btn-primary:hover{background:var(--gold-light);transform:translateY(-2px);box-shadow:inset 0 1px 0 rgba(255,255,255,0.45),0 8px 28px rgba(201,166,75,0.48)}
+    /* glass ghost — for dark backgrounds */
     .btn-ghost{
-      background:rgba(255,255,255,0.08);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
-      color:rgba(255,255,255,0.9);border:1px solid rgba(255,255,255,0.2)
+      background:rgba(255,255,255,0.13);
+      backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
+      color:rgba(255,255,255,0.92);
+      box-shadow:inset 0 1px 0 rgba(255,255,255,0.32),inset 0 -1px 0 rgba(0,0,0,0.1),0 4px 20px rgba(0,0,0,0.18)
     }
-    .btn-ghost::before{
-      content:'';position:absolute;inset:0;border-radius:inherit;padding:1px;
-      background:linear-gradient(180deg,rgba(255,255,255,0.28) 0%,rgba(255,255,255,0) 100%);
-      -webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);
-      -webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none
+    .btn-ghost:hover{background:rgba(255,255,255,0.22);color:var(--white);transform:translateY(-2px)}
+    /* frosted glass — for light backgrounds */
+    .btn-outline{
+      background:rgba(255,255,255,0.86);color:var(--navy);
+      backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+      box-shadow:inset 0 1px 0 rgba(255,255,255,1),inset 0 -1px 0 rgba(0,0,0,0.05),0 2px 10px rgba(11,31,59,0.1);
+      border:1px solid rgba(11,31,59,0.08)!important
     }
-    .btn-ghost:hover{background:rgba(255,255,255,0.16);color:var(--white);transform:translateY(-2px)}
-    .btn-outline{background:transparent;color:var(--navy);border:1px solid rgba(11,31,59,0.18)}
-    .btn-outline:hover{background:var(--navy);color:var(--white);transform:translateY(-2px)}
-    .btn-outline-gold{background:rgba(201,166,75,0.06);color:var(--gold);border:1px solid rgba(201,166,75,0.32)}
+    .btn-outline:hover{background:rgba(255,255,255,0.98);transform:translateY(-2px);box-shadow:inset 0 1px 0 rgba(255,255,255,1),0 8px 24px rgba(11,31,59,0.14)}
+    /* gold glass */
+    .btn-outline-gold{
+      background:rgba(255,255,255,0.06);color:var(--gold);
+      backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+      box-shadow:inset 0 1px 0 rgba(255,255,255,0.18),0 2px 10px rgba(201,166,75,0.1);
+      border:1px solid rgba(201,166,75,0.32)!important
+    }
     .btn-outline-gold:hover{background:var(--gold);color:var(--navy);transform:translateY(-2px)}
 
     .hero-compass{position:relative;display:flex;align-items:center;justify-content:center;opacity:0;animation:fadeIn 1.2s 0.8s var(--ease) forwards}
@@ -403,15 +429,9 @@
 
 <!-- HERO -->
 <section id="hero">
-  <!-- Ship at sea: YouTube iframe background -->
-  <div class="hero-video" aria-hidden="true">
-    <iframe
-      src="https://www.youtube.com/embed/uGMrDQFCBSI?autoplay=1&mute=1&loop=1&playlist=uGMrDQFCBSI&controls=0&disablekb=1&rel=0&modestbranding=1&playsinline=1&vq=hd1080"
-      allow="autoplay; fullscreen"
-      frameborder="0"
-      tabindex="-1"
-    ></iframe>
-  </div>
+  <video class="hero-video" autoplay muted loop playsinline preload="auto">
+    <source src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260317_100335_dc625816-c3c1-4b00-b93e-4cb301cf5ea5.mp4" type="video/mp4">
+  </video>
   <div class="hero-video-overlay"></div>
   <div class="map-grid"></div>
   <div class="container hero-inner">
