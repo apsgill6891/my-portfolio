@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Orbit — a calm logic puzzle</title>
+  <style>
+    :root {
+      --bg: #0b1020;
+      --panel: rgba(15, 23, 42, 0.92);
+      --panel-2: rgba(30, 41, 59, 0.92);
+      --line: rgba(148, 163, 184, 0.18);
+      --text: #e2e8f0;
+      --muted: #94a3b8;
+      --accent: #7dd3fc;
+      --accent-2: #c4b5fd;
+      --good: #86efac;
+      --bad: #fda4af;
+      --shadow: 0 24px 80px rgba(2, 6, 23, 0.45);
+      --cell-size: min(11vw, 64px);
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at top, rgba(125, 211, 252, 0.12), transparent 28%),
+        radial-gradient(circle at bottom right, rgba(196, 181, 253, 0.15), transparent 30%),
+        linear-gradient(180deg, #020617, #0f172a 50%, #111827);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 28px 16px 48px;
+    }
+
+    .shell {
+      max-width: 1080px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: minmax(0, 360px) minmax(0, 1fr);
+      gap: 24px;
+      align-items: start;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(18px);
+    }
+
+    .sidebar {
+      padding: 24px;
+      position: sticky;
+      top: 24px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(125, 211, 252, 0.22);
+      color: var(--accent);
+      font-size: 0.76rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(2rem, 4vw, 3.2rem);
+      line-height: 0.95;
+      letter-spacing: -0.05em;
+    }
+
+    .subtitle {
+      margin: 14px 0 22px;
+      color: var(--muted);
+      line-height: 1.6;
+      font-size: 0.98rem;
+    }
+
+    .rule-list {
+      display: grid;
+      gap: 12px;
+      margin: 0 0 22px;
+      padding: 0;
+      list-style: none;
+    }
+
+    .rule-list li,
+    .stat,
+    .level-chip {
+      background: var(--panel-2);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+    }
+
+    .rule-list li {
+      padding: 13px 14px;
+      display: grid;
+      grid-template-columns: 28px 1fr;
+      gap: 12px;
+      color: #dbe7f5;
+      line-height: 1.45;
+    }
+
+    .rule-icon {
+      width: 28px;
+      height: 28px;
+      display: grid;
+      place-items: center;
+      border-radius: 10px;
+      background: rgba(125, 211, 252, 0.08);
+      color: var(--accent);
+      font-weight: 700;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      margin-bottom: 22px;
+    }
+
+    .stat {
+      padding: 12px;
+      text-align: center;
+    }
+
+    .stat-label {
+      display: block;
+      color: var(--muted);
+      font-size: 0.72rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+
+    .stat strong {
+      font-size: 1.2rem;
+      letter-spacing: -0.03em;
+    }
+
+    .controls,
+    .level-strip {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    button,
+    a.link-btn {
+      border: 1px solid var(--line);
+      background: rgba(30, 41, 59, 0.9);
+      color: var(--text);
+      border-radius: 14px;
+      padding: 12px 16px;
+      font: inherit;
+      cursor: pointer;
+      transition: transform 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    button:hover,
+    a.link-btn:hover {
+      transform: translateY(-1px);
+      border-color: rgba(125, 211, 252, 0.42);
+    }
+
+    .primary {
+      background: linear-gradient(135deg, rgba(125, 211, 252, 0.18), rgba(196, 181, 253, 0.18));
+      border-color: rgba(125, 211, 252, 0.34);
+    }
+
+    .level-strip {
+      margin-top: 18px;
+    }
+
+    .level-chip {
+      padding: 10px 14px;
+      cursor: pointer;
+      color: var(--muted);
+    }
+
+    .level-chip.active {
+      color: var(--text);
+      border-color: rgba(125, 211, 252, 0.42);
+      box-shadow: inset 0 0 0 1px rgba(125, 211, 252, 0.2);
+    }
+
+    .game {
+      padding: 22px;
+    }
+
+    .topbar {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 18px;
+    }
+
+    .title-stack h2 {
+      margin: 0 0 6px;
+      font-size: 1.3rem;
+      letter-spacing: -0.04em;
+    }
+
+    .title-stack p,
+    .feedback,
+    .legend {
+      margin: 0;
+      color: var(--muted);
+    }
+
+    .board-wrap {
+      overflow-x: auto;
+      padding-bottom: 4px;
+    }
+
+    .board {
+      display: grid;
+      grid-template-columns: auto repeat(var(--size), var(--cell-size));
+      grid-template-rows: auto repeat(var(--size), var(--cell-size));
+      gap: 4px;
+      align-items: center;
+      justify-content: start;
+      min-width: fit-content;
+      user-select: none;
+      touch-action: manipulation;
+    }
+
+    .count {
+      width: var(--cell-size);
+      height: var(--cell-size);
+      display: grid;
+      place-items: center;
+      border-radius: 16px;
+      background: rgba(15, 23, 42, 0.78);
+      border: 1px solid var(--line);
+      color: var(--muted);
+      font-weight: 700;
+      font-size: 1.1rem;
+    }
+
+    .count.done {
+      color: var(--good);
+      border-color: rgba(134, 239, 172, 0.3);
+    }
+
+    .corner {
+      background: transparent;
+      border: none;
+    }
+
+    .cell {
+      position: relative;
+      width: var(--cell-size);
+      height: var(--cell-size);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+      display: grid;
+      place-items: center;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: rgba(15, 23, 42, 0.92);
+      cursor: pointer;
+      transition: transform 0.14s ease, box-shadow 0.14s ease, outline-color 0.14s ease;
+      overflow: hidden;
+    }
+
+    .cell:hover {
+      transform: translateY(-1px);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.35);
+    }
+
+    .cell.active::after {
+      content: "✦";
+      font-size: 1.25rem;
+      color: rgba(15, 23, 42, 0.92);
+      text-shadow: 0 1px 0 rgba(255,255,255,0.12);
+    }
+
+    .cell.note::before {
+      content: "•";
+      font-size: 1.2rem;
+      color: rgba(15, 23, 42, 0.48);
+      transform: translateY(-1px);
+    }
+
+    .cell.hinted {
+      box-shadow: inset 0 0 0 2px rgba(255,255,255,0.62);
+    }
+
+    .cell.invalid {
+      animation: bump 0.22s ease;
+      outline: 2px solid rgba(244, 114, 182, 0.55);
+      outline-offset: -3px;
+    }
+
+    .region-badge {
+      position: absolute;
+      top: 5px;
+      left: 6px;
+      font-size: 0.66rem;
+      font-weight: 800;
+      color: rgba(15, 23, 42, 0.58);
+      letter-spacing: 0.02em;
+      pointer-events: none;
+    }
+
+    .meta-row {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 12px;
+      margin-top: 16px;
+      align-items: center;
+    }
+
+    .feedback {
+      min-height: 24px;
+      font-size: 0.96rem;
+    }
+
+    .feedback.good { color: var(--good); }
+    .feedback.bad { color: var(--bad); }
+
+    .legend {
+      font-size: 0.88rem;
+      line-height: 1.5;
+      margin-top: 14px;
+    }
+
+    .toast {
+      margin-top: 18px;
+      padding: 14px 16px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, rgba(134, 239, 172, 0.16), rgba(125, 211, 252, 0.16));
+      border: 1px solid rgba(134, 239, 172, 0.22);
+      display: none;
+    }
+
+    .toast.show { display: block; }
+
+    @keyframes bump {
+      0% { transform: scale(1); }
+      50% { transform: scale(0.96); }
+      100% { transform: scale(1); }
+    }
+
+    @media (max-width: 900px) {
+      .shell { grid-template-columns: 1fr; }
+      .sidebar { position: static; }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <aside class="panel sidebar">
+      <div class="eyebrow">New puzzle prototype</div>
+      <h1>Orbit</h1>
+      <p class="subtitle">
+        A calm little logic game inspired by daily grid puzzles, but with softer rules and easier wins. Fill the board with stars until every clue settles.
+      </p>
+
+      <ul class="rule-list">
+        <li><span class="rule-icon">1</span><span>Each row and column must contain exactly the number of stars shown on the edge.</span></li>
+        <li><span class="rule-icon">2</span><span>Each colored zone has a tiny badge. Match that number of stars inside the zone.</span></li>
+        <li><span class="rule-icon">3</span><span>Stars cannot touch orthogonally. Diagonal neighbors are allowed, so the puzzle stays easy and playful.</span></li>
+      </ul>
+
+      <div class="stats">
+        <div class="stat"><span class="stat-label">Level</span><strong id="stat-level">1</strong></div>
+        <div class="stat"><span class="stat-label">Moves</span><strong id="stat-moves">0</strong></div>
+        <div class="stat"><span class="stat-label">Streak</span><strong id="stat-streak">0</strong></div>
+      </div>
+
+      <div class="controls">
+        <button class="primary" id="btn-reset">↺ Reset</button>
+        <button id="btn-hint">✦ Hint</button>
+        <button id="btn-note">• Note mode: Off</button>
+        <a class="link-btn" href="/">← Home</a>
+      </div>
+
+      <div class="level-strip" id="level-strip"></div>
+    </aside>
+
+    <section class="panel game">
+      <div class="topbar">
+        <div class="title-stack">
+          <h2 id="level-title">Level 1 · Warm Up</h2>
+          <p id="level-copy">Start with zones that only need one star and let the row counts guide the rest.</p>
+        </div>
+        <button id="btn-next">Next level →</button>
+      </div>
+
+      <div class="board-wrap">
+        <div class="board" id="board"></div>
+      </div>
+
+      <div class="meta-row">
+        <p class="feedback" id="feedback">Click to place stars. Right-click adds a note.</p>
+        <button id="btn-check">Check board</button>
+      </div>
+
+      <p class="legend">
+        Tip: when a row, column, or region is complete, its clue turns green. Use notes for maybes, then press <strong>Check board</strong> anytime.
+      </p>
+
+      <div class="toast" id="toast"></div>
+    </section>
+  </main>
+
+  <script>
+    const palettes = {
+      A: '#bae6fd', B: '#c4b5fd', C: '#fbcfe8', D: '#bbf7d0', E: '#fde68a',
+      F: '#fecaca', G: '#ddd6fe', H: '#a7f3d0', I: '#fdba74', J: '#bfdbfe',
+      K: '#f9a8d4', L: '#86efac', M: '#fcd34d', N: '#93c5fd'
+    };
+
+    const levels = [
+      {
+        name: 'Warm Up',
+        hint: 'Start with zones that only need one star and let the row counts guide the rest.',
+        solution: [
+          [1,0,0,1,0],
+          [0,1,0,0,1],
+          [0,0,1,0,0],
+          [1,0,0,1,0],
+          [0,1,0,0,1]
+        ],
+        regions: [
+          ['A','A','B','B','C'],
+          ['A','D','D','B','C'],
+          ['E','D','D','G','C'],
+          ['E','H','G','G','G'],
+          ['H','H','I','I','I']
+        ]
+      },
+      {
+        name: 'Crosswinds',
+        hint: 'Two-star regions are the anchors here. Lock those in first.',
+        solution: [
+          [1,0,1,0,0],
+          [0,1,0,1,0],
+          [1,0,0,0,1],
+          [0,1,0,1,0],
+          [0,0,1,0,1]
+        ],
+        regions: [
+          ['A','A','B','B','C'],
+          ['D','A','B','E','C'],
+          ['D','F','E','E','C'],
+          ['G','F','H','H','I'],
+          ['G','G','G','I','I']
+        ]
+      },
+      {
+        name: 'Shallow Orbit',
+        hint: 'Scan the 1-count columns first. They narrow the board quickly.',
+        solution: [
+          [1,0,0,1,0,0],
+          [0,1,0,0,0,1],
+          [0,0,1,0,1,0],
+          [1,0,0,0,0,1],
+          [0,0,1,0,1,0],
+          [0,1,0,1,0,0]
+        ],
+        regions: [
+          ['A','A','B','B','C','C'],
+          ['A','D','D','B','E','C'],
+          ['F','D','G','G','E','H'],
+          ['F','F','I','G','J','H'],
+          ['K','I','I','L','J','J'],
+          ['K','K','L','L','L','J']
+        ]
+      },
+      {
+        name: 'Blue Hour',
+        hint: 'The middle rows look busy, but the corner regions are the easiest entry point.',
+        solution: [
+          [0,1,0,0,1,0],
+          [1,0,0,1,0,0],
+          [0,0,1,0,0,1],
+          [1,0,0,1,0,0],
+          [0,1,0,0,0,1],
+          [0,0,1,0,1,0]
+        ],
+        regions: [
+          ['A','A','B','B','C','C'],
+          ['D','A','E','B','C','C'],
+          ['D','E','E','G','H','H'],
+          ['I','I','J','G','H','H'],
+          ['I','J','J','M','M','M'],
+          ['I','L','L','L','M','M']
+        ]
+      }
+    ];
+
+    const boardEl = document.getElementById('board');
+    const feedbackEl = document.getElementById('feedback');
+    const toastEl = document.getElementById('toast');
+    const levelStripEl = document.getElementById('level-strip');
+    const statLevelEl = document.getElementById('stat-level');
+    const statMovesEl = document.getElementById('stat-moves');
+    const statStreakEl = document.getElementById('stat-streak');
+    const levelTitleEl = document.getElementById('level-title');
+    const levelCopyEl = document.getElementById('level-copy');
+    const btnNote = document.getElementById('btn-note');
+
+    let currentLevel = 0;
+    let boardState = [];
+    let moves = 0;
+    let streak = 0;
+    let noteMode = false;
+    let hintedCell = null;
+
+    function cloneGrid(grid, fill = 0) {
+      return grid.map(row => row.map(() => fill));
+    }
+
+    function computeTargets(level) {
+      const size = level.solution.length;
+      const rowTargets = level.solution.map(row => row.reduce((a, b) => a + b, 0));
+      const colTargets = Array.from({ length: size }, (_, col) => level.solution.reduce((sum, row) => sum + row[col], 0));
+      const regionTargets = {};
+      level.regions.forEach((row, r) => {
+        row.forEach((region, c) => {
+          regionTargets[region] = (regionTargets[region] || 0) + level.solution[r][c];
+        });
+      });
+      return { rowTargets, colTargets, regionTargets };
+    }
+
+    function getLevelData(index) {
+      const level = levels[index];
+      return { ...level, ...computeTargets(level) };
+    }
+
+    function buildLevelStrip() {
+      levelStripEl.innerHTML = '';
+      levels.forEach((level, index) => {
+        const chip = document.createElement('button');
+        chip.className = `level-chip${index === currentLevel ? ' active' : ''}`;
+        chip.textContent = `${index + 1}. ${level.name}`;
+        chip.addEventListener('click', () => loadLevel(index));
+        levelStripEl.appendChild(chip);
+      });
+    }
+
+    function loadLevel(index) {
+      currentLevel = index;
+      moves = 0;
+      hintedCell = null;
+      boardState = cloneGrid(levels[index].solution, 0);
+      statMovesEl.textContent = '0';
+      render();
+      setFeedback('Click to place stars. Right-click adds a note.', '');
+      toastEl.className = 'toast';
+      toastEl.textContent = '';
+    }
+
+    function setFeedback(message, tone = '') {
+      feedbackEl.textContent = message;
+      feedbackEl.className = `feedback${tone ? ` ${tone}` : ''}`;
+    }
+
+    function countPlacedInRow(row) {
+      return boardState[row].filter(value => value === 1).length;
+    }
+
+    function countPlacedInCol(col) {
+      return boardState.reduce((sum, row) => sum + (row[col] === 1 ? 1 : 0), 0);
+    }
+
+    function countPlacedInRegion(region) {
+      const level = getLevelData(currentLevel);
+      let total = 0;
+      level.regions.forEach((row, r) => {
+        row.forEach((value, c) => {
+          if (value === region && boardState[r][c] === 1) total += 1;
+        });
+      });
+      return total;
+    }
+
+    function cellHasOrthogonalNeighbor(row, col) {
+      const deltas = [[1,0],[-1,0],[0,1],[0,-1]];
+      return deltas.some(([dr, dc]) => boardState[row + dr]?.[col + dc] === 1);
+    }
+
+    function isSolved() {
+      const level = getLevelData(currentLevel);
+      const rowsOk = level.rowTargets.every((target, row) => countPlacedInRow(row) === target);
+      const colsOk = level.colTargets.every((target, col) => countPlacedInCol(col) === target);
+      const regionsOk = Object.entries(level.regionTargets).every(([region, target]) => countPlacedInRegion(region) === target);
+      let adjacencyOk = true;
+      boardState.forEach((row, r) => row.forEach((value, c) => {
+        if (value === 1 && cellHasOrthogonalNeighbor(r, c)) adjacencyOk = false;
+      }));
+      return rowsOk && colsOk && regionsOk && adjacencyOk;
+    }
+
+    function invalidCells() {
+      const bad = new Set();
+      const level = getLevelData(currentLevel);
+
+      level.rowTargets.forEach((target, row) => {
+        if (countPlacedInRow(row) > target) {
+          boardState[row].forEach((value, col) => value === 1 && bad.add(`${row}-${col}`));
+        }
+      });
+
+      level.colTargets.forEach((target, col) => {
+        if (countPlacedInCol(col) > target) {
+          boardState.forEach((row, r) => row[col] === 1 && bad.add(`${r}-${col}`));
+        }
+      });
+
+      Object.entries(level.regionTargets).forEach(([region, target]) => {
+        if (countPlacedInRegion(region) > target) {
+          level.regions.forEach((row, r) => row.forEach((value, c) => {
+            if (value === region && boardState[r][c] === 1) bad.add(`${r}-${c}`);
+          }));
+        }
+      });
+
+      boardState.forEach((row, r) => row.forEach((value, c) => {
+        if (value === 1 && cellHasOrthogonalNeighbor(r, c)) {
+          bad.add(`${r}-${c}`);
+          [[1,0],[-1,0],[0,1],[0,-1]].forEach(([dr, dc]) => {
+            if (boardState[r + dr]?.[c + dc] === 1) bad.add(`${r + dr}-${c + dc}`);
+          });
+        }
+      }));
+
+      return bad;
+    }
+
+    function toggleCell(row, col, forceMode = null) {
+      const current = boardState[row][col];
+      const next = forceMode === 'note'
+        ? (current === 2 ? 0 : 2)
+        : (noteMode ? (current === 2 ? 0 : 2) : (current === 1 ? 0 : 1));
+      boardState[row][col] = next;
+      moves += 1;
+      hintedCell = null;
+      statMovesEl.textContent = String(moves);
+      render();
+
+      if (isSolved()) {
+        streak += 1;
+        statStreakEl.textContent = String(streak);
+        setFeedback('Solved. Smooth orbit.', 'good');
+        toastEl.className = 'toast show';
+        toastEl.innerHTML = `<strong>Level cleared.</strong> You matched every row, column, and zone in ${moves} moves.`;
+      } else {
+        const bad = invalidCells();
+        if (bad.size) {
+          setFeedback('Something is off: at least one clue is overfilled or two stars are touching.', 'bad');
+        } else {
+          setFeedback('Looking good. Green clues are already satisfied.', '');
+        }
+      }
+    }
+
+    function revealHint() {
+      const level = getLevelData(currentLevel);
+      for (let r = 0; r < level.solution.length; r += 1) {
+        for (let c = 0; c < level.solution.length; c += 1) {
+          if (level.solution[r][c] === 1 && boardState[r][c] !== 1) {
+            boardState[r][c] = 1;
+            hintedCell = `${r}-${c}`;
+            moves += 1;
+            statMovesEl.textContent = String(moves);
+            render();
+            setFeedback(`Hint used: row ${r + 1}, column ${c + 1} holds a star.`, '');
+            return;
+          }
+        }
+      }
+      setFeedback('No hint left to reveal on this board.', '');
+    }
+
+    function render() {
+      const level = getLevelData(currentLevel);
+      const size = level.solution.length;
+      boardEl.innerHTML = '';
+      boardEl.style.setProperty('--size', size);
+      statLevelEl.textContent = `${currentLevel + 1}/${levels.length}`;
+      levelTitleEl.textContent = `Level ${currentLevel + 1} · ${level.name}`;
+      levelCopyEl.textContent = level.hint;
+      buildLevelStrip();
+
+      const invalid = invalidCells();
+
+      const corner = document.createElement('div');
+      corner.className = 'count corner';
+      boardEl.appendChild(corner);
+
+      level.colTargets.forEach((target, col) => {
+        const el = document.createElement('div');
+        el.className = `count${countPlacedInCol(col) === target ? ' done' : ''}`;
+        el.textContent = target;
+        boardEl.appendChild(el);
+      });
+
+      for (let r = 0; r < size; r += 1) {
+        const rowCount = document.createElement('div');
+        rowCount.className = `count${countPlacedInRow(r) === level.rowTargets[r] ? ' done' : ''}`;
+        rowCount.textContent = level.rowTargets[r];
+        boardEl.appendChild(rowCount);
+
+        for (let c = 0; c < size; c += 1) {
+          const region = level.regions[r][c];
+          const regionDone = countPlacedInRegion(region) === level.regionTargets[region];
+          const cell = document.createElement('button');
+          cell.type = 'button';
+          cell.className = 'cell';
+          if (boardState[r][c] === 1) cell.classList.add('active');
+          if (boardState[r][c] === 2) cell.classList.add('note');
+          if (invalid.has(`${r}-${c}`)) cell.classList.add('invalid');
+          if (hintedCell === `${r}-${c}`) cell.classList.add('hinted');
+          cell.style.background = palettes[region] || '#e2e8f0';
+          cell.title = `Row ${r + 1}, column ${c + 1}`;
+          cell.setAttribute('aria-label', `Row ${r + 1}, column ${c + 1}`);
+
+          const badge = document.createElement('span');
+          badge.className = 'region-badge';
+          badge.textContent = regionDone ? `✓${level.regionTargets[region]}` : level.regionTargets[region];
+          cell.appendChild(badge);
+
+          cell.addEventListener('click', () => toggleCell(r, c));
+          cell.addEventListener('contextmenu', event => {
+            event.preventDefault();
+            toggleCell(r, c, 'note');
+          });
+          boardEl.appendChild(cell);
+        }
+      }
+    }
+
+    document.getElementById('btn-reset').addEventListener('click', () => {
+      boardState = cloneGrid(levels[currentLevel].solution, 0);
+      moves = 0;
+      hintedCell = null;
+      statMovesEl.textContent = '0';
+      toastEl.className = 'toast';
+      toastEl.textContent = '';
+      setFeedback('Board reset. Fresh orbit.', '');
+      render();
+    });
+
+    document.getElementById('btn-hint').addEventListener('click', revealHint);
+
+    btnNote.addEventListener('click', () => {
+      noteMode = !noteMode;
+      btnNote.textContent = `• Note mode: ${noteMode ? 'On' : 'Off'}`;
+      setFeedback(noteMode ? 'Note mode is on. Click cells to drop dots.' : 'Note mode is off. Click cells to place stars.', '');
+    });
+
+    document.getElementById('btn-check').addEventListener('click', () => {
+      if (isSolved()) {
+        setFeedback('Solved. Smooth orbit.', 'good');
+        toastEl.className = 'toast show';
+        toastEl.innerHTML = `<strong>Level cleared.</strong> You matched every row, column, and zone in ${moves} moves.`;
+        return;
+      }
+      const bad = invalidCells();
+      if (bad.size) {
+        setFeedback('There is still a conflict on the board. Look for touching stars or an overfilled clue.', 'bad');
+      } else {
+        setFeedback('No conflicts yet — keep going until every clue turns green.', '');
+      }
+    });
+
+    document.getElementById('btn-next').addEventListener('click', () => {
+      loadLevel((currentLevel + 1) % levels.length);
+    });
+
+    loadLevel(0);
+    statStreakEl.textContent = '0';
+  </script>
+</body>
+</html>

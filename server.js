@@ -16,9 +16,16 @@ const MIME = {
 };
 
 http.createServer((req, res) => {
-  let filePath = path.join(ROOT, req.url === '/' ? 'index.html' : req.url);
+  const cleanUrl = req.url.split('?')[0];
+  let filePath = path.join(ROOT, cleanUrl === '/' ? 'index.html' : cleanUrl);
+
+  if (cleanUrl.endsWith('/')) {
+    filePath = path.join(ROOT, cleanUrl, 'index.html');
+  } else if (!path.extname(filePath)) {
+    filePath += '.html';
+  }
+
   const ext = path.extname(filePath) || '.html';
-  if (!path.extname(filePath)) filePath += '.html';
 
   fs.readFile(filePath, (err, data) => {
     if (err) {
