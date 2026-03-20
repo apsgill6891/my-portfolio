@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>Quilt — Patchwork Puzzle</title>
+  <style>
+    /* ── THEME VARIABLES ── */
+    :root {
+      --bg:          #faf7f2;
+      --surface:     #ffffff;
+      --text:        #2c2416;
+      --muted:       #9c8f80;
+      --border:      #e0d4c4;
+      --grid-gap:    #c8bdb0;
+      --cell-empty:  #ede6dc;
+      --accent:      #b5651d;
+      --btn-bg:      #f2ece3;
+      --btn-hover:   #e6ddd0;
+      --shadow:      rgba(0,0,0,0.10);
+      --win-bg:      rgba(30,20,10,0.55);
+    }
+    body.dark {
+      --bg:          #1a1510;
+      --surface:     #231d16;
+      --text:        #ede6dc;
+      --muted:       #7a6e62;
+      --border:      #3a3028;
+      --grid-gap:    #2e2620;
+      --cell-empty:  #2e2620;
+      --accent:      #d4853a;
+      --btn-bg:      #2a2218;
+      --btn-hover:   #352b1f;
+      --shadow:      rgba(0,0,0,0.40);
+      --win-bg:      rgba(0,0,0,0.70);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: background .3s, color .3s;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+      overflow-x: hidden;
+    }
+
+    /* ── HEADER ── */
+    header {
+      width: 100%;
+      max-width: 520px;
+      padding: 18px 20px 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+    .logo-wrap { line-height: 1.15; }
+    .logo-title { font-size: 1.75rem; font-weight: 800; color: var(--accent); letter-spacing: -1px; }
+    .logo-sub   { font-size: 0.65rem; letter-spacing: 3px; text-transform: uppercase; color: var(--muted); margin-top: 1px; }
+    .header-btns { display: flex; gap: 8px; padding-top: 4px; }
+    .icon-btn {
+      width: 38px; height: 38px; border-radius: 50%;
+      border: 1.5px solid var(--border); background: var(--btn-bg); color: var(--text);
+      font-size: 1.1rem; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: background .2s, transform .15s;
+    }
+    .icon-btn:hover  { background: var(--btn-hover); transform: scale(1.08); }
+    .icon-btn:active { transform: scale(0.95); }
+
+    /* ── DIFFICULTY TABS ── */
+    .diff-bar {
+      display: flex; gap: 4px;
+      background: var(--btn-bg); border: 1.5px solid var(--border);
+      border-radius: 12px; padding: 4px; margin-bottom: 14px;
+    }
+    .diff-btn {
+      padding: 7px 20px; border: none; border-radius: 8px;
+      background: transparent; color: var(--muted);
+      font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all .2s;
+    }
+    .diff-btn.active { background: var(--surface); color: var(--accent); box-shadow: 0 2px 8px var(--shadow); }
+
+    /* ── GAME AREA ── */
+    .game-area { width: 100%; max-width: 520px; padding: 0 16px; display: flex; flex-direction: column; align-items: center; }
+
+    /* ── STATUS BAR ── */
+    .status-bar {
+      width: 100%; display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 10px; font-size: 0.82rem; color: var(--muted);
+    }
+    .status-bar strong { color: var(--text); }
+    .progress-pill { background: var(--btn-bg); border: 1.5px solid var(--border); border-radius: 20px; padding: 3px 12px; font-size: 0.78rem; }
+
+    /* ── GRID WRAPPER ── */
+    .grid-wrap {
+      background: var(--surface); border-radius: 18px; padding: 14px;
+      box-shadow: 0 6px 28px var(--shadow); margin-bottom: 18px; touch-action: none;
+    }
+
+    /* ── GRID ── */
+    .grid {
+      display: grid; background: var(--grid-gap);
+      border: 2px solid var(--grid-gap); border-radius: 8px; overflow: hidden; gap: 2px;
+    }
+
+    /* ── CELLS ── */
+    .cell {
+      background: var(--cell-empty); display: flex; align-items: center; justify-content: center;
+      cursor: pointer; position: relative; transition: background .12s; border: 2px solid transparent;
+    }
+    .cell .num {
+      font-size: inherit; font-weight: 800; line-height: 1;
+      position: relative; z-index: 2; pointer-events: none;
+    }
+
+    /* ── ACTION BUTTONS ── */
+    .action-bar { display: flex; gap: 10px; width: 100%; justify-content: center; margin-bottom: 16px; }
+    .action-btn {
+      flex: 1; max-width: 110px; padding: 10px 8px;
+      border: 1.5px solid var(--border); border-radius: 12px;
+      background: var(--btn-bg); color: var(--text);
+      font-size: 0.8rem; font-weight: 600; cursor: pointer;
+      display: flex; flex-direction: column; align-items: center; gap: 4px; transition: all .2s;
+    }
+    .action-btn:hover   { background: var(--btn-hover); transform: translateY(-2px); box-shadow: 0 4px 12px var(--shadow); }
+    .action-btn:active  { transform: translateY(0); }
+    .action-btn .aicon  { font-size: 1.25rem; }
+    .action-btn:disabled{ opacity: 0.4; cursor: default; transform: none; }
+
+    /* ── INSTRUCTIONS ── */
+    .instructions {
+      font-size: 0.78rem; color: var(--muted); text-align: center;
+      line-height: 1.7; max-width: 320px; padding-bottom: 24px;
+    }
+    .instructions b { color: var(--text); }
+
+    /* ── WIN OVERLAY ── */
+    .win-overlay {
+      position: fixed; inset: 0; background: var(--win-bg);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 100; opacity: 0; pointer-events: none; transition: opacity .35s;
+    }
+    .win-overlay.show { opacity: 1; pointer-events: all; }
+    .win-card {
+      background: var(--surface); border-radius: 24px; padding: 44px 52px; text-align: center;
+      transform: scale(0.75) translateY(40px);
+      transition: transform .4s cubic-bezier(0.34,1.56,0.64,1);
+      box-shadow: 0 24px 64px rgba(0,0,0,.35); max-width: 320px; width: 90%;
+    }
+    .win-overlay.show .win-card { transform: scale(1) translateY(0); }
+    .win-emoji  { font-size: 3.2rem; margin-bottom: 10px; }
+    .win-title  { font-size: 1.9rem; font-weight: 800; color: var(--accent); margin-bottom: 6px; }
+    .win-msg    { color: var(--muted); font-size: 0.92rem; margin-bottom: 26px; line-height: 1.5; }
+    .win-next {
+      padding: 13px 32px; border: none; border-radius: 12px;
+      background: var(--accent); color: #fff; font-size: 1rem; font-weight: 700;
+      cursor: pointer; transition: opacity .2s, transform .15s; display: block; width: 100%;
+    }
+    .win-next:hover { opacity: .88; transform: scale(1.03); }
+
+    /* ── HOW-TO MODAL ── */
+    .modal-overlay {
+      position: fixed; inset: 0; background: var(--win-bg);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 200; opacity: 0; pointer-events: none; transition: opacity .3s;
+    }
+    .modal-overlay.show { opacity: 1; pointer-events: all; }
+    .modal-card {
+      background: var(--surface); border-radius: 20px; padding: 32px 28px;
+      max-width: 340px; width: 90%;
+      box-shadow: 0 20px 50px rgba(0,0,0,.3);
+      transform: scale(0.9); transition: transform .3s cubic-bezier(0.34,1.4,0.64,1);
+    }
+    .modal-overlay.show .modal-card { transform: scale(1); }
+    .modal-title { font-size: 1.3rem; font-weight: 800; color: var(--accent); margin-bottom: 14px; }
+    .modal-body  { font-size: 0.85rem; color: var(--text); line-height: 1.7; }
+    .modal-body li { margin-bottom: 8px; margin-left: 16px; }
+    .modal-close {
+      margin-top: 22px; padding: 10px 24px; border: none; border-radius: 10px;
+      background: var(--accent); color: #fff; font-size: 0.9rem; font-weight: 700;
+      cursor: pointer; display: block; width: 100%;
+    }
+
+    /* ── CONFETTI ── */
+    @keyframes confetti-fall {
+      0%   { transform: translateY(-20px) rotate(0deg);   opacity: 1; }
+      100% { transform: translateY(105vh) rotate(540deg); opacity: 0; }
+    }
+    .confetti { position: fixed; top: -20px; border-radius: 3px; animation: confetti-fall linear forwards; pointer-events: none; z-index: 300; }
+
+    /* ── HINT FLASH ── */
+    @keyframes hint-pop {
+      0%  { transform: scale(1);    }
+      40% { transform: scale(1.08); }
+      100%{ transform: scale(1);    }
+    }
+    .hint-flash { animation: hint-pop .5s ease; }
+  </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="logo-wrap">
+    <div class="logo-title">🧵 Quilt</div>
+    <div class="logo-sub">Patchwork Puzzle</div>
+  </div>
+  <div class="header-btns">
+    <button class="icon-btn" id="themeBtn" title="Toggle day/night">🌙</button>
+    <button class="icon-btn" id="helpBtn"  title="How to play">❓</button>
+  </div>
+</header>
+
+<!-- GAME AREA -->
+<div class="game-area">
+
+  <div class="diff-bar">
+    <button class="diff-btn active" data-d="easy">Easy</button>
+    <button class="diff-btn"        data-d="medium">Medium</button>
+    <button class="diff-btn"        data-d="hard">Hard</button>
+  </div>
+
+  <div class="status-bar">
+    <span>Patches filled: <strong id="fillCount">0</strong> / <strong id="fillTotal">0</strong></span>
+    <span class="progress-pill" id="puzzleLabel">Puzzle 1</span>
+  </div>
+
+  <div class="grid-wrap">
+    <div class="grid" id="grid"></div>
+  </div>
+
+  <div class="action-bar">
+    <button class="action-btn" id="undoBtn"><span class="aicon">↩️</span><span>Undo</span></button>
+    <button class="action-btn" id="hintBtn"><span class="aicon">💡</span><span>Hint</span></button>
+    <button class="action-btn" id="newBtn" ><span class="aicon">🎲</span><span>New</span></button>
+    <button class="action-btn" id="solveBtn"><span class="aicon">✨</span><span>Solve</span></button>
+  </div>
+
+  <p class="instructions">
+    <b>Drag</b> across cells to fill a patch — the number must equal the patch size.<br>
+    Cover every square. <b>Tap</b> a filled patch to remove it.
+  </p>
+</div>
+
+<!-- WIN OVERLAY -->
+<div class="win-overlay" id="winOverlay">
+  <div class="win-card">
+    <div class="win-emoji">🎉</div>
+    <div class="win-title">Quilt done!</div>
+    <div class="win-msg" id="winMsg">Every patch is perfectly placed.</div>
+    <button class="win-next" id="winNextBtn">Next Puzzle →</button>
+  </div>
+</div>
+
+<!-- HOW-TO MODAL -->
+<div class="modal-overlay" id="helpModal">
+  <div class="modal-card">
+    <div class="modal-title">🧵 How to Play</div>
+    <div class="modal-body">
+      <ul>
+        <li>Each number on the grid is a <b>clue</b> for one patch.</li>
+        <li>Draw a rectangle that contains <b>exactly that many squares</b> — and the clue must be inside it.</li>
+        <li><b>Drag</b> from one corner to another to place a patch.</li>
+        <li>Every square must be covered — <b>no gaps, no overlaps</b>.</li>
+        <li><b>Tap</b> any filled patch to remove it.</li>
+        <li>Use <b>💡 Hint</b> to reveal one correct patch.</li>
+      </ul>
+    </div>
+    <button class="modal-close" id="helpClose">Got it!</button>
+  </div>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════════════════
+   PUZZLE DATA  — all verified: total cells = size²,
+   each rect contains exactly 1 clue equal to its area.
+═══════════════════════════════════════════════════════ */
+const PUZZLES = {
+  easy: [
+    { size:5,
+      clues:[{r:0,c:2,n:5},{r:1,c:0,n:4},{r:1,c:3,n:6},{r:3,c:1,n:6},{r:4,c:4,n:4}],
+      sol:[{r1:0,c1:0,r2:0,c2:4},{r1:1,c1:0,r2:2,c2:1},{r1:1,c1:2,r2:2,c2:4},{r1:3,c1:0,r2:4,c2:2},{r1:3,c1:3,r2:4,c2:4}]
+    },
+    { size:5,
+      clues:[{r:0,c:1,n:6},{r:1,c:4,n:6},{r:2,c:0,n:3},{r:3,c:0,n:4},{r:4,c:3,n:6}],
+      sol:[{r1:0,c1:0,r2:1,c2:2},{r1:0,c1:3,r2:2,c2:4},{r1:2,c1:0,r2:2,c2:2},{r1:3,c1:0,r2:4,c2:1},{r1:3,c1:2,r2:4,c2:4}]
+    },
+    { size:5,
+      clues:[{r:0,c:1,n:3},{r:0,c:3,n:4},{r:2,c:1,n:4},{r:2,c:2,n:3},{r:2,c:4,n:4},{r:4,c:0,n:4},{r:4,c:3,n:3}],
+      sol:[{r1:0,c1:0,r2:0,c2:2},{r1:0,c1:3,r2:1,c2:4},{r1:1,c1:0,r2:2,c2:1},{r1:1,c1:2,r2:3,c2:2},{r1:2,c1:3,r2:3,c2:4},{r1:3,c1:0,r2:4,c2:1},{r1:4,c1:2,r2:4,c2:4}]
+    }
+  ],
+  medium: [
+    { size:6,
+      clues:[{r:0,c:2,n:6},{r:2,c:0,n:6},{r:1,c:3,n:8},{r:3,c:2,n:4},{r:4,c:5,n:6},{r:5,c:0,n:4},{r:5,c:2,n:2}],
+      sol:[{r1:0,c1:0,r2:0,c2:5},{r1:1,c1:0,r2:3,c2:1},{r1:1,c1:2,r2:2,c2:5},{r1:3,c1:2,r2:4,c2:3},{r1:3,c1:4,r2:5,c2:5},{r1:4,c1:0,r2:5,c2:1},{r1:5,c1:2,r2:5,c2:3}]
+    },
+    { size:6,
+      clues:[{r:0,c:3,n:6},{r:1,c:1,n:8},{r:2,c:5,n:6},{r:3,c:2,n:4},{r:4,c:1,n:6},{r:5,c:4,n:6}],
+      sol:[{r1:0,c1:0,r2:0,c2:5},{r1:1,c1:0,r2:2,c2:3},{r1:1,c1:4,r2:3,c2:5},{r1:3,c1:0,r2:3,c2:3},{r1:4,c1:0,r2:5,c2:2},{r1:4,c1:3,r2:5,c2:5}]
+    }
+  ],
+  hard: [
+    { size:7,
+      clues:[{r:0,c:3,n:7},{r:2,c:1,n:9},{r:1,c:5,n:8},{r:3,c:3,n:4},{r:4,c:6,n:8},{r:5,c:1,n:9},{r:6,c:3,n:4}],
+      sol:[{r1:0,c1:0,r2:0,c2:6},{r1:1,c1:0,r2:3,c2:2},{r1:1,c1:3,r2:2,c2:6},{r1:3,c1:3,r2:4,c2:4},{r1:3,c1:5,r2:6,c2:6},{r1:4,c1:0,r2:6,c2:2},{r1:5,c1:3,r2:6,c2:4}]
+    },
+    { size:7,
+      clues:[{r:0,c:1,n:6},{r:1,c:5,n:8},{r:3,c:1,n:9},{r:2,c:3,n:4},{r:3,c:6,n:6},{r:4,c:3,n:2},{r:6,c:1,n:6},{r:5,c:3,n:4},{r:6,c:6,n:4}],
+      sol:[{r1:0,c1:0,r2:1,c2:2},{r1:0,c1:3,r2:1,c2:6},{r1:2,c1:0,r2:4,c2:2},{r1:2,c1:3,r2:3,c2:4},{r1:2,c1:5,r2:4,c2:6},{r1:4,c1:3,r2:4,c2:4},{r1:5,c1:0,r2:6,c2:2},{r1:5,c1:3,r2:6,c2:4},{r1:5,c1:5,r2:6,c2:6}]
+    }
+  ]
+};
+
+/* ── Colour palettes ── */
+const PAL_LIGHT = ['#F6CBA4','#A8D5EA','#B6E5B6','#F2B3CC','#C9B8EC','#F5E8A0','#A4DDD0','#F0C4A0','#D0E8A8','#EAB8E4','#B8D4F0','#F4D4A4'];
+const PAL_DARK  = ['#7a3d16','#1a4e70','#2a602a','#701838','#40286a','#5a5010','#156050','#6a3a12','#3a5a12','#5a2060','#204870','#5a3e10'];
+
+/* ── State ── */
+const S = { diff:'easy', pidx:0, puzzle:null, placed:[], history:[], ci:0, dragging:false, dStart:null, dEnd:null, dark:false };
+
+/* ── Helpers ── */
+const normRect  = (a,b) => ({r1:Math.min(a.r,b.r),c1:Math.min(a.c,b.c),r2:Math.max(a.r,b.r),c2:Math.max(a.c,b.c)});
+const rectArea  = r  => (r.r2-r.r1+1)*(r.c2-r.c1+1);
+const inRect    = (r,c,rect) => r>=rect.r1&&r<=rect.r2&&c>=rect.c1&&c<=rect.c2;
+const overlaps  = (a,b) => !(a.r2<b.r1||a.r1>b.r2||a.c2<b.c1||a.c1>b.c2);
+const snap      = () => JSON.parse(JSON.stringify(S.placed));
+
+/* ── Load puzzle ── */
+function loadPuzzle(diff, idx) {
+  S.diff=diff; S.pidx=idx; S.puzzle=PUZZLES[diff][idx];
+  S.placed=[]; S.history=[]; S.ci=0; S.dragging=false; S.dStart=S.dEnd=null;
+  document.getElementById('winOverlay').classList.remove('show');
+  render(); updateStatus();
+}
+
+/* ── Render ── */
+function render() {
+  const p=S.puzzle, sz=p.size, grid=document.getElementById('grid');
+  const pal = S.dark ? PAL_DARK : PAL_LIGHT;
+  const maxW = Math.min(window.innerWidth-60,480)-28;
+  const cellPx = Math.max(40, Math.floor((maxW-(sz-1)*2)/sz));
+  const numSz  = Math.max(13, Math.round(cellPx*0.38));
+
+  grid.style.gridTemplateColumns = `repeat(${sz},${cellPx}px)`;
+
+  /* lookup maps */
+  const clueMap={};
+  p.clues.forEach(cl=>{clueMap[`${cl.r},${cl.c}`]=cl.n;});
+  const fillMap={};
+  S.placed.forEach(rect=>{
+    for(let r=rect.r1;r<=rect.r2;r++)
+      for(let c=rect.c1;c<=rect.c2;c++) fillMap[`${r},${c}`]=rect;
+  });
+
+  /* preview */
+  let preview=null, previewOk=false;
+  if(S.dragging&&S.dStart&&S.dEnd){
+    preview=normRect(S.dStart,S.dEnd);
+    const area=rectArea(preview);
+    const cIn=p.clues.filter(cl=>inRect(cl.r,cl.c,preview));
+    const ov=S.placed.some(r=>overlaps(r,preview));
+    previewOk=cIn.length===1&&cIn[0].n===area&&!ov;
+  }
+
+  grid.innerHTML='';
+  for(let r=0;r<sz;r++){
+    for(let c=0;c<sz;c++){
+      const cell=document.createElement('div');
+      cell.className='cell';
+      cell.style.width=cell.style.height=cellPx+'px';
+      cell.dataset.r=r; cell.dataset.c=c;
+
+      const key=`${r},${c}`, rect=fillMap[key];
+
+      if(rect){
+        cell.style.background=pal[rect.ci%pal.length];
+        if(r===rect.r1) cell.style.borderTop   ='3px solid rgba(0,0,0,.28)';
+        if(r===rect.r2) cell.style.borderBottom='3px solid rgba(0,0,0,.28)';
+        if(c===rect.c1) cell.style.borderLeft  ='3px solid rgba(0,0,0,.28)';
+        if(c===rect.c2) cell.style.borderRight ='3px solid rgba(0,0,0,.28)';
+      }
+
+      if(preview&&inRect(r,c,preview)){
+        cell.style.background=previewOk?'#88cc88':'#e08888';
+        cell.style.opacity='0.72';
+      }
+
+      if(clueMap[key]!==undefined){
+        const num=document.createElement('span');
+        num.className='num'; num.textContent=clueMap[key];
+        num.style.fontSize=numSz+'px';
+        num.style.color=rect?'rgba(0,0,0,0.65)':'var(--text)';
+        cell.appendChild(num);
+      }
+
+      cell.addEventListener('mousedown', onDown);
+      cell.addEventListener('mouseenter',onMove);
+      cell.addEventListener('touchstart',onTouchStart,{passive:false});
+      cell.addEventListener('touchmove', onTouchMove, {passive:false});
+      grid.appendChild(cell);
+    }
+  }
+}
+
+function updateStatus(){
+  document.getElementById('fillCount').textContent=S.placed.length;
+  document.getElementById('fillTotal').textContent=S.puzzle.clues.length;
+  document.getElementById('puzzleLabel').textContent=`Puzzle ${S.pidx+1} / ${PUZZLES[S.diff].length}`;
+  document.getElementById('undoBtn').disabled=S.history.length===0;
+}
+
+/* ── Mouse events ── */
+function onDown(e){
+  if(e.button!==0) return; e.preventDefault();
+  S.dragging=true; S.dStart=S.dEnd={r:+this.dataset.r,c:+this.dataset.c}; render();
+}
+function onMove(e){
+  if(!S.dragging) return;
+  S.dEnd={r:+this.dataset.r,c:+this.dataset.c}; render();
+}
+document.addEventListener('mouseup',()=>{ if(S.dragging) finishDrag(); });
+
+/* ── Touch events ── */
+function cellAtTouch(touch){
+  const el=document.elementFromPoint(touch.clientX,touch.clientY);
+  const cell=el&&(el.classList.contains('cell')?el:el.closest('.cell'));
+  return cell?{r:+cell.dataset.r,c:+cell.dataset.c}:null;
+}
+function onTouchStart(e){
+  e.preventDefault();
+  const pt=cellAtTouch(e.touches[0]); if(!pt) return;
+  S.dragging=true; S.dStart=S.dEnd=pt; render();
+}
+function onTouchMove(e){
+  e.preventDefault(); if(!S.dragging) return;
+  const pt=cellAtTouch(e.touches[0]); if(pt){S.dEnd=pt; render();}
+}
+document.addEventListener('touchend',()=>{ if(S.dragging) finishDrag(); });
+
+/* ── Finish drag ── */
+function finishDrag(){
+  const start=S.dStart, end=S.dEnd;
+  S.dragging=false; S.dStart=S.dEnd=null;
+  if(!start||!end){render();return;}
+
+  /* Single tap → remove */
+  if(start.r===end.r&&start.c===end.c){
+    const rect=S.placed.find(r=>inRect(start.r,start.c,r));
+    if(rect){ S.history.push(snap()); S.placed=S.placed.filter(r=>r!==rect); render(); updateStatus(); return; }
+  }
+
+  tryPlace(start,end); render(); updateStatus();
+}
+
+/* ── Place rect ── */
+function tryPlace(a,b){
+  const rect=normRect(a,b), area=rectArea(rect), p=S.puzzle;
+  const cIn=p.clues.filter(cl=>inRect(cl.r,cl.c,rect));
+  if(cIn.length!==1||cIn[0].n!==area) return;
+  if(S.placed.some(r=>overlaps(r,rect))) return;
+  S.history.push(snap());
+  S.placed.push({...rect,ci:S.ci++});
+  checkWin();
+}
+
+/* ── Win check ── */
+function checkWin(){
+  const sz=S.puzzle.size, filled=new Set();
+  S.placed.forEach(rect=>{
+    for(let r=rect.r1;r<=rect.r2;r++)
+      for(let c=rect.c1;c<=rect.c2;c++) filled.add(`${r},${c}`);
+  });
+  if(filled.size===sz*sz){ render(); setTimeout(showWin,300); }
+}
+
+/* ── Win screen ── */
+function showWin(){
+  const msgs=['Every patch is perfectly placed! 🧵','A flawless quilt — you\'re a natural!','The quilt guild is impressed. 🏆','Not a single thread out of place!'];
+  document.getElementById('winMsg').textContent=msgs[Math.floor(Math.random()*msgs.length)];
+  document.getElementById('winOverlay').classList.add('show');
+  spawnConfetti();
+}
+function spawnConfetti(){
+  const colors=PAL_LIGHT;
+  for(let i=0;i<70;i++){
+    setTimeout(()=>{
+      const el=document.createElement('div');
+      el.className='confetti';
+      el.style.left=Math.random()*100+'vw';
+      el.style.width=(7+Math.random()*9)+'px';
+      el.style.height=(7+Math.random()*9)+'px';
+      el.style.background=colors[Math.floor(Math.random()*colors.length)];
+      el.style.animationDuration=(1.5+Math.random()*2.5)+'s';
+      el.style.animationDelay=(Math.random()*0.6)+'s';
+      document.body.appendChild(el);
+      setTimeout(()=>el.remove(),4500);
+    },i*25);
+  }
+}
+
+/* ── Buttons ── */
+document.getElementById('undoBtn').addEventListener('click',()=>{
+  if(!S.history.length) return;
+  S.placed=S.history.pop();
+  S.ci=S.placed.length?Math.max(...S.placed.map(r=>r.ci))+1:0;
+  render(); updateStatus();
+});
+
+document.getElementById('hintBtn').addEventListener('click',()=>{
+  for(const sol of S.puzzle.sol){
+    const done=S.placed.some(p=>p.r1===sol.r1&&p.c1===sol.c1&&p.r2===sol.r2&&p.c2===sol.c2);
+    if(done) continue;
+    if(S.placed.some(r=>overlaps(r,sol))) continue;
+    S.history.push(snap());
+    S.placed.push({...sol,ci:S.ci++});
+    render(); updateStatus();
+    /* Flash */
+    const grid=document.getElementById('grid'), sz=S.puzzle.size;
+    for(let r=sol.r1;r<=sol.r2;r++) for(let c=sol.c1;c<=sol.c2;c++){
+      const cell=grid.children[r*sz+c];
+      if(cell){cell.classList.add('hint-flash'); setTimeout(()=>cell.classList.remove('hint-flash'),600);}
+    }
+    checkWin(); return;
+  }
+});
+
+document.getElementById('newBtn').addEventListener('click',()=>{
+  const pool=PUZZLES[S.diff];
+  loadPuzzle(S.diff,(S.pidx+1)%pool.length);
+});
+
+document.getElementById('solveBtn').addEventListener('click',()=>{
+  S.history.push(snap()); S.placed=[]; S.ci=0;
+  S.puzzle.sol.forEach(sol=>S.placed.push({...sol,ci:S.ci++}));
+  render(); updateStatus(); setTimeout(showWin,400);
+});
+
+document.getElementById('winNextBtn').addEventListener('click',()=>document.getElementById('newBtn').click());
+
+document.querySelectorAll('.diff-btn').forEach(btn=>btn.addEventListener('click',function(){
+  document.querySelectorAll('.diff-btn').forEach(b=>b.classList.remove('active'));
+  this.classList.add('active'); loadPuzzle(this.dataset.d,0);
+}));
+
+document.getElementById('themeBtn').addEventListener('click',()=>{
+  S.dark=!S.dark; document.body.classList.toggle('dark',S.dark);
+  document.getElementById('themeBtn').textContent=S.dark?'☀️':'🌙'; render();
+});
+
+document.getElementById('helpBtn').addEventListener('click',()=>document.getElementById('helpModal').classList.add('show'));
+document.getElementById('helpClose').addEventListener('click',()=>document.getElementById('helpModal').classList.remove('show'));
+document.getElementById('grid').addEventListener('contextmenu',e=>e.preventDefault());
+window.addEventListener('resize',()=>render());
+
+/* ── Boot ── */
+loadPuzzle('easy',0);
+</script>
+</body>
+</html>

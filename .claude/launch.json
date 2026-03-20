@@ -6,6 +6,18 @@
       "runtimeExecutable": "C:\\Users\\apsgi\\AppData\\Local\\Programs\\cursor\\resources\\app\\resources\\helpers\\node.exe",
       "runtimeArgs": ["server.js"],
       "port": 3000
+    },
+    {
+      "name": "finance-scanner",
+      "runtimeExecutable": "C:\\Users\\apsgi\\anaconda3\\python.exe",
+      "runtimeArgs": ["C:\\Users\\apsgi\\OneDrive\\Documents\\Portfolio\\finance-scanner\\backend\\main.py"],
+      "port": 8000
+    },
+    {
+      "name": "quilt-game",
+      "runtimeExecutable": "C:\\Users\\apsgi\\anaconda3\\python.exe",
+      "runtimeArgs": ["-m", "http.server", "3456", "--directory", "C:\\Users\\apsgi\\OneDrive\\Documents\\Portfolio\\quilt-game"],
+      "port": 3456
     }
   ]
 }
